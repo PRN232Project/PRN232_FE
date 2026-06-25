@@ -54,14 +54,14 @@ export const Navbar: React.FC = () => {
           <nav className="hidden md:flex items-center gap-1.5 text-sm font-semibold">
             <a
               href="/courses"
-              className="px-3.5 py-2 text-zinc-650 hover:text-zinc-950 hover:bg-zinc-100/70 rounded-lg transition-all"
+              className="px-3.5 py-2 text-zinc-700 hover:text-zinc-950 hover:bg-zinc-100/70 rounded-lg transition-all"
             >
               Khám Phá
             </a>
             {isStudent && (
               <a
                 href="/dashboard"
-                className="px-3.5 py-2 text-zinc-650 hover:text-zinc-950 hover:bg-zinc-100/70 rounded-lg transition-all"
+                className="px-3.5 py-2 text-zinc-700 hover:text-zinc-950 hover:bg-zinc-100/70 rounded-lg transition-all"
               >
                 Học Tập Của Tôi
               </a>
@@ -69,7 +69,7 @@ export const Navbar: React.FC = () => {
             {isInstructor && (
               <a
                 href="/instructor/courses/create"
-                className="px-3.5 py-2 text-zinc-650 hover:text-zinc-950 hover:bg-zinc-100/70 rounded-lg transition-all"
+                className="px-3.5 py-2 text-zinc-700 hover:text-zinc-950 hover:bg-zinc-100/70 rounded-lg transition-all"
               >
                 Tạo Khóa Học
               </a>
@@ -103,7 +103,7 @@ export const Navbar: React.FC = () => {
               {isInstructor && (
                 <a
                   href="/instructor/dashboard"
-                  className="hidden md:flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold text-zinc-650 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-all"
+                  className="hidden md:flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold text-zinc-700 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-all"
                 >
                   Giảng viên
                 </a>
@@ -154,7 +154,7 @@ export const Navbar: React.FC = () => {
                             <a
                               href="/dashboard"
                               onClick={() => setDropdownOpen(false)}
-                              className="flex items-center gap-3 px-3 py-2 text-xs font-semibold text-zinc-650 hover:text-blue-600 hover:bg-zinc-50 rounded-xl transition-all"
+                              className="flex items-center gap-3 px-3 py-2 text-xs font-semibold text-zinc-700 hover:text-blue-600 hover:bg-zinc-50 rounded-xl transition-all"
                             >
                               <div className="w-6.5 h-6.5 rounded-lg bg-zinc-50 border border-zinc-100 flex items-center justify-center text-zinc-400">
                                 <PlayCircle className="w-3.5 h-3.5" />
@@ -164,7 +164,7 @@ export const Navbar: React.FC = () => {
                             <a
                               href="/certificates"
                               onClick={() => setDropdownOpen(false)}
-                              className="flex items-center gap-3 px-3 py-2 text-xs font-semibold text-zinc-650 hover:text-amber-600 hover:bg-amber-50 rounded-xl transition-all"
+                              className="flex items-center gap-3 px-3 py-2 text-xs font-semibold text-zinc-700 hover:text-amber-600 hover:bg-amber-50 rounded-xl transition-all"
                             >
                               <div className="w-6.5 h-6.5 rounded-lg bg-zinc-50 border border-amber-50 flex items-center justify-center text-amber-500">
                                 <Award className="w-3.5 h-3.5" />
@@ -174,7 +174,7 @@ export const Navbar: React.FC = () => {
                             <a
                               href="/messages"
                               onClick={() => setDropdownOpen(false)}
-                              className="flex items-center gap-3 px-3 py-2 text-xs font-semibold text-zinc-650 hover:text-indigo-650 hover:bg-indigo-50 rounded-xl transition-all"
+                              className="flex items-center gap-3 px-3 py-2 text-xs font-semibold text-zinc-700 hover:text-indigo-650 hover:bg-indigo-50 rounded-xl transition-all"
                             >
                               <div className="w-6.5 h-6.5 rounded-lg bg-zinc-50 border border-indigo-50 flex items-center justify-center text-indigo-500">
                                 <MessageSquare className="w-3.5 h-3.5" />
@@ -186,7 +186,7 @@ export const Navbar: React.FC = () => {
                         <a
                           href={getDashboardLink()}
                           onClick={() => setDropdownOpen(false)}
-                          className="flex items-center gap-3 px-3 py-2 text-xs font-semibold text-zinc-650 hover:text-blue-600 hover:bg-zinc-50 rounded-xl transition-all"
+                          className="flex items-center gap-3 px-3 py-2 text-xs font-semibold text-zinc-700 hover:text-blue-600 hover:bg-zinc-50 rounded-xl transition-all"
                         >
                           <div className="w-6.5 h-6.5 rounded-lg bg-zinc-50 border border-zinc-100 flex items-center justify-center text-zinc-400">
                             <UserIcon className="w-3.5 h-3.5" />
@@ -220,7 +220,7 @@ export const Navbar: React.FC = () => {
             <div className="flex items-center gap-3">
               <a
                 href="/auth/login"
-                className="px-4 py-2 text-sm font-bold text-zinc-650 hover:text-zinc-950 transition-colors"
+                className="px-4 py-2 text-sm font-bold text-zinc-700 hover:text-zinc-950 transition-colors"
               >
                 Đăng nhập
               </a>
