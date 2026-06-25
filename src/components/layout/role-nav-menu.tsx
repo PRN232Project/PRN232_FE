@@ -28,7 +28,7 @@ export const RoleNavMenu: React.FC<RoleNavMenuProps> = ({ role }) => {
     { name: 'Dashboard', href: '/instructor/dashboard', icon: LayoutDashboard },
     { name: 'Khóa học của tôi', href: '/instructor/courses', icon: BookOpen },
     { name: 'Ví & Doanh thu', href: '/instructor/wallet', icon: Wallet },
-    { name: 'Tin nhắn', href: '/messages', icon: MessageSquare },
+    { name: 'Tin nhắn', href: '/instructor/messages', icon: MessageSquare },
   ];
 
   // 3. Student Menu Items

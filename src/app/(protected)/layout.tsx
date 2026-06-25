@@ -3,8 +3,7 @@
 import React, { useEffect } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
 import { useAuth } from '@/context/AuthContext';
-import DashboardLayout from '@/components/layout/dashboard-layout';
-import RoleNavMenu from '@/components/layout/role-nav-menu';
+import Navbar from '@/components/shared/Navbar';
 
 export default function ProtectedLayout({
   children,
@@ -16,10 +15,25 @@ export default function ProtectedLayout({
   const pathname = usePathname();
 
   useEffect(() => {
-    if (!loading && !user) {
-      router.replace('/auth/login');
+    if (!loading) {
+      if (!user) {
+        router.replace('/auth/login');
+        return;
+      }
+
+      // Enforce role-based routing
+      if (user.role === 0 && !pathname.startsWith('/admin')) {
+        // Admin must be inside /admin routes
+        router.replace('/admin/dashboard');
+      } else if (user.role === 1 && !pathname.startsWith('/instructor')) {
+        // Instructor must be inside /instructor routes
+        router.replace('/instructor/dashboard');
+      } else if (user.role === 2 && (pathname.startsWith('/admin') || pathname.startsWith('/instructor'))) {
+        // Student cannot access admin/instructor routes
+        router.replace('/dashboard');
+      }
     }
-  }, [user, loading, router]);
+  }, [user, loading, pathname, router]);
 
   if (loading || !user) {
     return (
@@ -29,31 +43,59 @@ export default function ProtectedLayout({
     );
   }
 
-  // Compute title label dynamically based on path
-  const getPageTitle = () => {
-    if (pathname.startsWith('/admin')) {
-      if (pathname.includes('/users')) return 'Quản lý Người dùng';
-      if (pathname.includes('/courses')) return 'Duyệt Khóa Học';
-      if (pathname.includes('/payouts')) return 'Yêu cầu rút tiền';
-      return 'Tổng quan Quản trị';
-    }
-    if (pathname.startsWith('/instructor')) {
-      if (pathname.includes('/courses')) return 'Quản lý khóa học';
-      if (pathname.includes('/wallet')) return 'Ví tiền & Doanh thu';
-      if (pathname.includes('/messages')) return 'Hộp thư Giảng viên';
-      return 'Dashboard Giảng viên';
-    }
-    if (pathname.startsWith('/messages')) return 'Hộp thư của tôi';
-    if (pathname.startsWith('/certificates')) return 'Chứng chỉ của tôi';
-    return 'Khóa học của tôi';
-  };
+  // If user is Admin (0) or Instructor (1), render children directly.
+  // Their nested layout files under /admin/layout.tsx and /instructor/layout.tsx
+  // will wrap them inside the DashboardLayout with Sidebar.
+  if (user.role === 0 || user.role === 1) {
+    return <>{children}</>;
+  }
 
+  // For Student (role === 2): Render top Navbar and a clean, centered interface
   return (
-    <DashboardLayout
-      title={getPageTitle()}
-      sidebarContent={<RoleNavMenu role={user.role} />}
-    >
-      {children}
-    </DashboardLayout>
+    <div className="min-h-screen flex flex-col bg-zinc-50">
+      <Navbar />
+      
+      {/* Student Sub-navigation Tab bar */}
+      <div className="border-b border-zinc-200 bg-white">
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+          <div className="flex space-x-8">
+            <a
+              href="/dashboard"
+              className={`py-4 text-xs font-semibold border-b-2 transition-all ${
+                pathname === '/dashboard'
+                  ? 'border-blue-600 text-blue-600'
+                  : 'border-transparent text-zinc-500 hover:text-zinc-800'
+              }`}
+            >
+              Khóa học của tôi
+            </a>
+            <a
+              href="/certificates"
+              className={`py-4 text-xs font-semibold border-b-2 transition-all ${
+                pathname === '/certificates'
+                  ? 'border-blue-600 text-blue-600'
+                  : 'border-transparent text-zinc-500 hover:text-zinc-800'
+              }`}
+            >
+              Chứng chỉ của tôi
+            </a>
+            <a
+              href="/messages"
+              className={`py-4 text-xs font-semibold border-b-2 transition-all ${
+                pathname === '/messages'
+                  ? 'border-blue-600 text-blue-600'
+                  : 'border-transparent text-zinc-500 hover:text-zinc-800'
+              }`}
+            >
+              Trò chuyện với Giảng viên
+            </a>
+          </div>
+        </div>
+      </div>
+
+      <main className="flex-1 max-w-7xl w-full mx-auto p-4 sm:p-6 lg:p-8">
+        {children}
+      </main>
+    </div>
   );
 }
