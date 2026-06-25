@@ -1,7 +1,7 @@
 import apiClient, { USE_MOCK, delay } from '@/lib/api-client';
 import { Enrollment, UserLessonProgress, Certificate, GradedAttempt } from './type';
 import { LessonItemType } from '../course/type';
-import { mockEnrollments, mockCourses, mockProgress, mockCertificates, mockUsers } from '../mock-data';
+import { mockEnrollments, mockCourses, mockProgress, mockCertificates, mockUsers } from '@/lib/service/mock-data';
 
 export const studentService = {
   getMyCourses: async (userId: string): Promise<Enrollment[]> => {

@@ -2,7 +2,7 @@ import apiClient, { USE_MOCK, delay } from '@/lib/api-client';
 import { Course, CourseStatus, Module } from '../course/type';
 import { Wallet, WalletTransaction } from '../auth/type';
 import { InstructorStats } from './type';
-import { mockCourses, mockWallets, mockTransactions } from '../mock-data';
+import { mockCourses, mockWallets, mockTransactions } from '@/lib/service/mock-data';
 
 export const instructorService = {
   getInstructorCourses: async (instructorId: string): Promise<Course[]> => {

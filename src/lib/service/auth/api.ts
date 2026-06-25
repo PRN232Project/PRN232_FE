@@ -1,6 +1,6 @@
 import apiClient, { USE_MOCK, delay } from '@/lib/api-client';
 import { User, UserRole } from './type';
-import { mockUsers } from '../mock-data';
+import { mockUsers } from '@/lib/service/mock-data';
 
 export interface LoginResponse {
   user: User;

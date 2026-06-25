@@ -1,6 +1,6 @@
 import apiClient, { USE_MOCK, delay } from '@/lib/api-client';
 import { Course, CourseStatus } from './type';
-import { mockCourses } from '../mock-data';
+import { mockCourses } from '@/lib/service/mock-data';
 
 export const courseService = {
   getCourses: async (search?: string, languageId?: string, maxPrice?: number): Promise<Course[]> => {

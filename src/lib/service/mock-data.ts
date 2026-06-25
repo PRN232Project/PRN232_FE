@@ -1,6 +1,6 @@
-import { User, UserRole, Wallet, WalletTransaction, Message } from './auth';
-import { Course, CourseStatus, LessonItemType } from './course';
-import { Enrollment, Certificate, UserLessonProgress } from './student';
+import { User, UserRole, Wallet, WalletTransaction, Message } from './auth/type';
+import { Course, CourseStatus, LessonItemType } from './course/type';
+import { Enrollment, Certificate, UserLessonProgress } from './student/type';
 
 // Mock Users
 export const mockUsers: User[] = [
