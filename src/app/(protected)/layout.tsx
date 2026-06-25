@@ -54,45 +54,6 @@ export default function ProtectedLayout({
   return (
     <div className="min-h-screen flex flex-col bg-zinc-50">
       <Navbar />
-      
-      {/* Student Sub-navigation Tab bar */}
-      <div className="border-b border-zinc-200 bg-white">
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          <div className="flex space-x-8">
-            <a
-              href="/dashboard"
-              className={`py-4 text-xs font-semibold border-b-2 transition-all ${
-                pathname === '/dashboard'
-                  ? 'border-blue-600 text-blue-600'
-                  : 'border-transparent text-zinc-500 hover:text-zinc-800'
-              }`}
-            >
-              Khóa học của tôi
-            </a>
-            <a
-              href="/certificates"
-              className={`py-4 text-xs font-semibold border-b-2 transition-all ${
-                pathname === '/certificates'
-                  ? 'border-blue-600 text-blue-600'
-                  : 'border-transparent text-zinc-500 hover:text-zinc-800'
-              }`}
-            >
-              Chứng chỉ của tôi
-            </a>
-            <a
-              href="/messages"
-              className={`py-4 text-xs font-semibold border-b-2 transition-all ${
-                pathname === '/messages'
-                  ? 'border-blue-600 text-blue-600'
-                  : 'border-transparent text-zinc-500 hover:text-zinc-800'
-              }`}
-            >
-              Trò chuyện với Giảng viên
-            </a>
-          </div>
-        </div>
-      </div>
-
       <main className="flex-1 max-w-7xl w-full mx-auto p-4 sm:p-6 lg:p-8">
         {children}
       </main>

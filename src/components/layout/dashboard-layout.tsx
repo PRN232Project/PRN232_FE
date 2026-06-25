@@ -1,9 +1,8 @@
 'use client';
 
-import React from 'react';
+import React, { useState } from 'react';
 import { useAuth } from '@/context/AuthContext';
-import { GraduationCap, ChevronDown, Bell } from 'lucide-react';
-import { useState } from 'react';
+import { GraduationCap, ChevronDown, Bell, Menu } from 'lucide-react';
 
 interface DashboardLayoutProps {
   title: string;
@@ -18,6 +17,7 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({
 }) => {
   const { user, logout } = useAuth();
   const [dropdownOpen, setDropdownOpen] = useState(false);
+  const [sidebarOpen, setSidebarOpen] = useState(true);
 
   const getRoleLabel = (role?: number) => {
     if (role === 0) return 'Admin';
@@ -27,8 +27,12 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({
 
   return (
     <div className="min-h-screen bg-zinc-50 flex">
-      {/* 1. Left Sidebar Wrapper */}
-      <aside className="fixed left-0 top-0 z-30 flex h-screen w-64 flex-col border-r border-zinc-200 bg-zinc-900 text-zinc-300">
+      {/* 1. Left Sidebar Wrapper with transition */}
+      <aside
+        className={`fixed left-0 top-0 z-30 flex h-screen w-64 flex-col border-r border-zinc-200 bg-zinc-900 text-zinc-300 transition-transform duration-300 shrink-0 ${
+          sidebarOpen ? 'translate-x-0' : '-translate-x-full'
+        }`}
+      >
         <div className="flex h-16 items-center gap-2 px-6 border-b border-zinc-800 shrink-0">
           <GraduationCap className="h-7 w-7 text-blue-400" />
           <span className="text-base font-bold text-white tracking-wide">OLP Academy</span>
@@ -38,14 +42,39 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({
         </div>
       </aside>
 
-      {/* 2. Right Main Viewport */}
-      <div className="flex-1 pl-64 flex flex-col min-w-0">
-        
+      {/* Mobile Sidebar Overlay */}
+      {sidebarOpen && (
+        <div
+          onClick={() => setSidebarOpen(false)}
+          className="fixed inset-0 z-20 bg-black/30 backdrop-blur-sm lg:hidden"
+        />
+      )}
+
+      {/* 2. Right Main Viewport with transition */}
+      <div
+        className={`flex-1 flex flex-col min-w-0 transition-all duration-300 ${
+          sidebarOpen ? 'pl-64' : 'pl-0'
+        }`}
+      >
         {/* Header Bar */}
-        <header className="sticky top-0 z-20 flex h-16 items-center justify-between border-b border-zinc-200 bg-white px-8 shrink-0">
-          <h2 className="text-sm font-bold text-zinc-900 uppercase tracking-wide">
-            {title}
-          </h2>
+        <header className="sticky top-0 z-20 flex h-16 items-center justify-between border-b border-zinc-200 bg-white px-6 shrink-0">
+          <div className="flex items-center gap-2">
+            {/* Sidebar Collapse Toggle Button */}
+            <button
+              onClick={() => {
+                setSidebarOpen(!sidebarOpen);
+                // Dispatch resize event to force charts to re-render properly
+                setTimeout(() => window.dispatchEvent(new Event('resize')), 300);
+              }}
+              className="p-2 rounded-lg text-zinc-500 hover:bg-zinc-100 hover:text-zinc-950 transition-colors mr-1"
+            >
+              <Menu className="h-5 w-5" />
+            </button>
+            <div className="h-5 w-px bg-zinc-200 mr-2 hidden sm:block"></div>
+            <h2 className="text-sm font-bold text-zinc-900 uppercase tracking-wide truncate max-w-xs sm:max-w-md">
+              {title}
+            </h2>
+          </div>
 
           <div className="flex items-center gap-4">
             <button className="relative p-1.5 rounded-full hover:bg-zinc-100 text-zinc-400 hover:text-zinc-650 transition-colors">
@@ -66,7 +95,7 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({
                     className="h-7 w-7 rounded-full object-cover"
                   />
                   <span className="text-xs font-semibold text-zinc-700 hidden sm:inline">{user.fullName}</span>
-                  <ChevronDown className="h-3.5 w-3.5 text-zinc-450 hidden sm:inline" />
+                  <ChevronDown className="h-3.5 w-3.5 text-zinc-400 hidden sm:inline" />
                 </button>
 
                 {dropdownOpen && (
@@ -74,9 +103,9 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({
                     <div className="fixed inset-0 z-30" onClick={() => setDropdownOpen(false)} />
                     <div className="absolute right-0 mt-2 w-52 origin-top-right rounded-lg bg-white p-1 shadow-lg ring-1 ring-black/5 z-40 border border-zinc-100">
                       <div className="px-3 py-2 border-b border-zinc-150 mb-1">
-                        <p className="text-[10px] text-zinc-450 font-semibold">{user.email}</p>
+                        <p className="text-[10px] text-zinc-400 font-semibold">{user.email}</p>
                         <span className="inline-block mt-1 px-2 py-0.5 text-[9px] font-bold bg-blue-50 text-blue-700 rounded-full border border-blue-100">
-                          {getRoleLabel(user.role)}
+                           {getRoleLabel(user.role)}
                         </span>
                       </div>
                       <button
