@@ -135,7 +135,7 @@ export default function LearningPage() {
   const overallProgress = totalLessons > 0 ? Math.round((completedLessons / totalLessons) * 100) : 0;
 
   return (
-    <div className="flex h-screen flex-col bg-zinc-900 text-zinc-150 overflow-hidden">
+    <div className="flex h-screen flex-col bg-zinc-900 text-zinc-200 overflow-hidden">
       
       {/* Top Header Navigation */}
       <header className="flex h-14 items-center justify-between border-b border-zinc-800 bg-zinc-950 px-6 shrink-0">
@@ -158,7 +158,7 @@ export default function LearningPage() {
             <span className="text-[10px] text-zinc-400 font-medium">Tiến trình khóa học</span>
             <span className="text-xs font-bold text-blue-400">{overallProgress}% Hoàn thành</span>
           </div>
-          <div className="hidden sm:block w-32 bg-zinc-850 h-1.5 rounded-full">
+          <div className="hidden sm:block w-32 bg-zinc-800 h-1.5 rounded-full">
             <div
               className="bg-blue-500 h-1.5 rounded-full transition-all duration-300"
               style={{ width: `${overallProgress}%` }}
@@ -189,7 +189,7 @@ export default function LearningPage() {
               )}
 
               {selectedItem.type === LessonItemType.Article && (
-                <div className="rounded-2xl bg-zinc-850 p-6 md:p-8 border border-zinc-800 prose prose-invert max-w-none shadow-md">
+                <div className="rounded-2xl bg-zinc-800 p-6 md:p-8 border border-zinc-800 prose prose-invert max-w-none shadow-md">
                   <h1 className="text-xl md:text-2xl font-extrabold text-white mb-4">{selectedItem.title}</h1>
                   <p className="text-sm text-zinc-300 leading-relaxed mb-4">
                     Chào mừng bạn đến với nội dung bài đọc chi tiết của khóa học. Lớp học này thiết lập tài liệu tự học kèm theo hướng dẫn thực hành.
@@ -206,7 +206,7 @@ export default function LearningPage() {
               )}
 
               {selectedItem.type === LessonItemType.Quiz && selectedItem.gradedItem && (
-                <div className="rounded-2xl bg-zinc-850 p-6 md:p-8 border border-zinc-800 shadow-md">
+                <div className="rounded-2xl bg-zinc-800 p-6 md:p-8 border border-zinc-800 shadow-md">
                   <div className="flex items-center gap-2 mb-4">
                     <GraduationCap className="h-6 w-6 text-amber-400" />
                     <h2 className="text-lg font-bold text-white">Bài trắc nghiệm: {selectedItem.gradedItem.title}</h2>
@@ -246,7 +246,7 @@ export default function LearningPage() {
                       <button
                         type="submit"
                         disabled={quizSubmitting || Object.keys(answers).length < (selectedItem.gradedItem.questions?.length || 0)}
-                        className="rounded-xl bg-blue-600 hover:bg-blue-700 py-3 px-6 text-xs font-semibold text-white shadow transition-all disabled:bg-zinc-800 disabled:text-zinc-650 cursor-pointer block w-full text-center"
+                        className="rounded-xl bg-blue-600 hover:bg-blue-700 py-3 px-6 text-xs font-semibold text-white shadow transition-all disabled:bg-zinc-800 disabled:text-zinc-600 cursor-pointer block w-full text-center"
                       >
                         {quizSubmitting ? 'Đang chấm điểm...' : 'Nộp bài trắc nghiệm'}
                       </button>
@@ -316,7 +316,7 @@ export default function LearningPage() {
                     disabled={isLessonCompleted(selectedLessonId)}
                     className={`inline-flex items-center gap-2 rounded-xl px-5 py-2.5 text-xs font-semibold transition-all cursor-pointer ${
                       isLessonCompleted(selectedLessonId)
-                        ? 'bg-zinc-800 text-zinc-500 border border-zinc-750'
+                        ? 'bg-zinc-800 text-zinc-500 border border-zinc-700'
                         : 'bg-blue-600 hover:bg-blue-700 text-white shadow-md'
                     }`}
                   >
@@ -338,7 +338,7 @@ export default function LearningPage() {
             <h3 className="font-bold text-white text-xs uppercase tracking-wider">Nội dung khóa học</h3>
           </div>
 
-          <div className="divide-y divide-zinc-850">
+          <div className="divide-y divide-zinc-800">
             {course.modules?.map((mod) => (
               <div key={mod.moduleId} className="p-4 space-y-3">
                 <h4 className="text-xs font-bold text-zinc-400 leading-tight">{mod.title}</h4>
@@ -349,7 +349,7 @@ export default function LearningPage() {
                     return (
                       <div key={les.lessonId} className="space-y-1">
                         <div className={`p-2 rounded-lg flex items-center justify-between text-xs font-medium ${
-                          activeLesson ? 'bg-zinc-850 text-white' : 'text-zinc-400'
+                          activeLesson ? 'bg-zinc-800 text-white' : 'text-zinc-400'
                         }`}>
                           <span className="truncate">{les.title}</span>
                           {completed && <CheckCircle2 className="h-3.5 w-3.5 text-green-500 shrink-0 ml-1.5" />}

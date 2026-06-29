@@ -40,7 +40,7 @@ export const Navbar: React.FC = () => {
   };
 
   return (
-    <header className="sticky top-0 z-40 w-full border-b border-zinc-250/60 bg-white/85 backdrop-blur-md transition-all duration-300">
+    <header className="sticky top-0 z-40 w-full transition-all duration-300 glass-navbar shadow-sm shadow-zinc-100/50">
       <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8 gap-6">
         
         {/* Left Area: Logo & Navigation */}
@@ -174,7 +174,7 @@ export const Navbar: React.FC = () => {
                             <a
                               href="/messages"
                               onClick={() => setDropdownOpen(false)}
-                              className="flex items-center gap-3 px-3 py-2 text-xs font-semibold text-zinc-700 hover:text-indigo-650 hover:bg-indigo-50 rounded-xl transition-all"
+                              className="flex items-center gap-3 px-3 py-2 text-xs font-semibold text-zinc-700 hover:text-indigo-600 hover:bg-indigo-50 rounded-xl transition-all"
                             >
                               <div className="w-6.5 h-6.5 rounded-lg bg-zinc-50 border border-indigo-50 flex items-center justify-center text-indigo-500">
                                 <MessageSquare className="w-3.5 h-3.5" />

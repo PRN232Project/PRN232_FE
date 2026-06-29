@@ -135,7 +135,7 @@ export default function AdminUsersPage() {
             placeholder="Tìm theo tên hoặc email..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="w-full rounded-lg border border-zinc-300 bg-white py-2 pl-9 pr-4 text-xs focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none"
+            className="w-full rounded-lg border border-zinc-350 bg-white py-2 pl-9 pr-4 text-xs text-zinc-900 font-bold focus:border-indigo-500 outline-none placeholder:text-zinc-500"
           />
         </div>
 
@@ -167,7 +167,7 @@ export default function AdminUsersPage() {
         </div>
 
         {/* Counter Info */}
-        <div className="flex items-center justify-end text-xs font-semibold text-zinc-500 px-2 gap-1 bg-zinc-50 rounded-lg border border-zinc-150/70 py-2 sm:py-0">
+        <div className="flex items-center justify-end text-xs font-semibold text-zinc-500 px-2 gap-1 bg-zinc-50 rounded-lg border border-zinc-200/70 py-2 sm:py-0">
           <Filter className="h-3.5 w-3.5 text-zinc-400" />
           Hiển thị: <span className="text-zinc-800 font-bold">{filteredUsers.length}</span> / {users.length} thành viên
         </div>
@@ -200,7 +200,7 @@ export default function AdminUsersPage() {
                   <th className="px-6 py-4 text-right">Khóa / Mở khóa</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-zinc-150">
+              <tbody className="divide-y divide-zinc-200">
                 {filteredUsers.map((item) => (
                   <tr key={item.userId} className="hover:bg-zinc-50/50 transition-colors duration-150">
                     <td className="px-6 py-4 font-semibold text-zinc-900 flex items-center gap-3">
@@ -226,11 +226,11 @@ export default function AdminUsersPage() {
                     </td>
                     <td className="px-6 py-4">
                       {item.isDeleted ? (
-                        <span className="inline-flex items-center gap-1 text-[10px] font-semibold text-red-650 bg-red-50 px-2.5 py-1 rounded-full border border-red-100 shadow-sm">
+                        <span className="inline-flex items-center gap-1 text-[10px] font-semibold text-red-600 bg-red-50 px-2.5 py-1 rounded-full border border-red-100 shadow-sm">
                           Đã khóa
                         </span>
                       ) : (
-                        <span className="inline-flex items-center gap-1 text-[10px] font-semibold text-green-600 bg-green-50 px-2.5 py-1 rounded-full border border-green-250 shadow-sm">
+                        <span className="inline-flex items-center gap-1 text-[10px] font-semibold text-green-600 bg-green-50 px-2.5 py-1 rounded-full border border-green-200 shadow-sm">
                           Bình thường
                         </span>
                       )}
@@ -241,7 +241,7 @@ export default function AdminUsersPage() {
                         className={`inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-[11px] font-semibold transition-all cursor-pointer shadow-sm border ${
                           item.isDeleted
                             ? 'bg-green-50 hover:bg-green-100 text-green-700 border-green-200'
-                            : 'bg-red-50 hover:bg-red-100 text-red-650 border-red-200'
+                            : 'bg-red-50 hover:bg-red-100 text-red-600 border-red-200'
                         }`}
                       >
                         {item.isDeleted ? (

@@ -42,7 +42,7 @@ export default function CreateCoursePage() {
       <div className="flex items-center gap-3">
         <button
           onClick={() => router.push('/instructor/courses')}
-          className="flex h-8 w-8 items-center justify-center rounded-lg border border-zinc-200 bg-white text-zinc-650 hover:bg-zinc-50 transition-colors cursor-pointer"
+          className="flex h-8 w-8 items-center justify-center rounded-lg border border-zinc-200 bg-white text-zinc-600 hover:bg-zinc-50 transition-colors cursor-pointer"
         >
           <ArrowLeft className="h-4.5 w-4.5" />
         </button>
@@ -104,7 +104,7 @@ export default function CreateCoursePage() {
             <select
               value={languageId}
               onChange={(e) => setLanguageId(e.target.value)}
-              className="block w-full rounded-lg border border-zinc-300 px-3.5 py-2.5 text-sm text-zinc-750 bg-white focus:border-indigo-500 focus:outline-none"
+              className="block w-full rounded-lg border border-zinc-300 px-3.5 py-2.5 text-sm text-zinc-700 bg-white focus:border-indigo-500 focus:outline-none"
             >
               <option value="lang-vi">Tiếng Việt</option>
               <option value="lang-en">Tiếng Anh</option>
@@ -126,11 +126,11 @@ export default function CreateCoursePage() {
           <p className="text-[10px] text-zinc-400 mt-1">Để trống để sử dụng ảnh mặc định của hệ thống.</p>
         </div>
 
-        <div className="pt-4 border-t border-zinc-150 flex items-center justify-end gap-3">
+        <div className="pt-4 border-t border-zinc-200 flex items-center justify-end gap-3">
           <button
             type="button"
             onClick={() => router.push('/instructor/courses')}
-            className="rounded-lg border border-zinc-200 bg-white hover:bg-zinc-55/10 px-4 py-2.5 text-xs font-semibold text-zinc-650 transition-colors cursor-pointer"
+            className="rounded-lg border border-zinc-200 bg-white hover:bg-zinc-100/10 px-4 py-2.5 text-xs font-semibold text-zinc-600 transition-colors cursor-pointer"
           >
             Hủy bỏ
           </button>

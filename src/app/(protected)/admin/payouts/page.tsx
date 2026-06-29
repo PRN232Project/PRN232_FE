@@ -38,7 +38,7 @@ export default function AdminPayoutsPage() {
   };
 
   if (loading) {
-    return <div className="text-zinc-55/80 text-center py-10">Đang tải danh sách yêu cầu rút tiền...</div>;
+    return <div className="text-zinc-50/80 text-center py-10">Đang tải danh sách yêu cầu rút tiền...</div>;
   }
 
   return (
@@ -47,7 +47,7 @@ export default function AdminPayoutsPage() {
         <div className="rounded-xl border border-dashed border-zinc-300 p-16 text-center bg-white">
           <CreditCard className="h-12 w-12 text-zinc-400 mx-auto mb-4" />
           <h3 className="font-bold text-zinc-800 text-sm">Hộp thư giao dịch trống</h3>
-          <p className="text-xs text-zinc-55/90 mt-1 max-w-sm mx-auto">
+          <p className="text-xs text-zinc-50/90 mt-1 max-w-sm mx-auto">
             Hiện không có yêu cầu thanh toán/rút tiền nào đang chờ xử lý từ các giảng viên.
           </p>
         </div>

@@ -80,7 +80,7 @@ export default function InstructorDashboard() {
           </div>
           <div className="mt-4">
             <h3 className="text-2xl font-extrabold text-zinc-900">{stats?.activeCoursesCount}</h3>
-            <span className="text-[10px] text-zinc-450 mt-1 block">Khóa học đang hoạt động</span>
+            <span className="text-[10px] text-zinc-500 font-semibold mt-1 block">Khóa học đang hoạt động</span>
           </div>
         </div>
 
@@ -93,7 +93,7 @@ export default function InstructorDashboard() {
           </div>
           <div className="mt-4">
             <h3 className="text-2xl font-extrabold text-zinc-900">{stats?.averageRating} / 5.0</h3>
-            <span className="text-[10px] text-zinc-455 mt-1 block">Từ phản hồi của học viên</span>
+            <span className="text-[10px] text-zinc-500 font-semibold mt-1 block">Từ phản hồi của học viên</span>
           </div>
         </div>
       </div>
@@ -124,12 +124,12 @@ export default function InstructorDashboard() {
 
         <div className="rounded-xl border border-zinc-200 bg-white p-6 shadow-sm">
           <h2 className="text-sm font-bold text-zinc-900 mb-4">Khóa học đăng ký nhiều</h2>
-          <div className="divide-y divide-zinc-150">
+          <div className="divide-y divide-zinc-200">
             {stats?.popularCourses.map((c, i) => (
               <div key={i} className="py-3.5 flex items-center justify-between gap-4">
                 <div className="overflow-hidden">
-                  <p className="text-xs font-semibold text-zinc-805/85 truncate">{c.title}</p>
-                  <p className="text-[10px] text-zinc-450 mt-0.5">{c.enrollments} lượt học viên</p>
+                  <p className="text-xs font-bold text-zinc-800 truncate">{c.title}</p>
+                  <p className="text-[10px] text-zinc-500 font-medium mt-0.5">{c.enrollments} lượt học viên</p>
                 </div>
                 <div className="text-right shrink-0">
                   <span className="text-xs font-bold text-zinc-950">{formatVND(c.revenue)}</span>

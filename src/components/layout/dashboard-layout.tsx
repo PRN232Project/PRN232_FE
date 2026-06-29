@@ -77,7 +77,7 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({
           </div>
 
           <div className="flex items-center gap-4">
-            <button className="relative p-1.5 rounded-full hover:bg-zinc-100 text-zinc-400 hover:text-zinc-650 transition-colors">
+            <button className="relative p-1.5 rounded-full hover:bg-zinc-100 text-zinc-400 hover:text-zinc-600 transition-colors">
               <Bell className="h-4.5 w-4.5" />
               <span className="absolute top-1 right-1 h-1.5 w-1.5 rounded-full bg-red-500"></span>
             </button>
@@ -102,7 +102,7 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({
                   <>
                     <div className="fixed inset-0 z-30" onClick={() => setDropdownOpen(false)} />
                     <div className="absolute right-0 mt-2 w-52 origin-top-right rounded-lg bg-white p-1 shadow-lg ring-1 ring-black/5 z-40 border border-zinc-100">
-                      <div className="px-3 py-2 border-b border-zinc-150 mb-1">
+                      <div className="px-3 py-2 border-b border-zinc-200 mb-1">
                         <p className="text-[10px] text-zinc-400 font-semibold">{user.email}</p>
                         <span className="inline-block mt-1 px-2 py-0.5 text-[9px] font-bold bg-blue-50 text-blue-700 rounded-full border border-blue-100">
                            {getRoleLabel(user.role)}

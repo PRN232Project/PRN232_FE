@@ -108,7 +108,7 @@ export default function StudentDashboard() {
                     </div>
 
                     <div className="mt-6 space-y-3">
-                      <div className="flex items-center justify-between text-xs font-medium text-zinc-650">
+                      <div className="flex items-center justify-between text-xs font-medium text-zinc-600">
                         <span>Tiến độ học tập</span>
                         <span className="text-blue-600 font-semibold">{enroll.progressPercent}%</span>
                       </div>

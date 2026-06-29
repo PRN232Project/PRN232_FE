@@ -33,14 +33,14 @@ export default function CertificatesPage() {
   };
 
   if (loading) {
-    return <div className="text-zinc-55/80 text-center py-10">Đang tải chứng chỉ...</div>;
+    return <div className="text-zinc-50/80 text-center py-10">Đang tải chứng chỉ...</div>;
   }
 
   return (
     <div className="space-y-8">
       <div>
         <h1 className="text-2xl font-bold text-zinc-950">Chứng chỉ của tôi</h1>
-        <p className="mt-1 text-sm text-zinc-55/90">
+        <p className="mt-1 text-sm text-zinc-50/90">
           Nơi lưu trữ các chứng nhận hoàn thành khóa học xuất sắc của bạn
         </p>
       </div>
@@ -48,7 +48,7 @@ export default function CertificatesPage() {
       {certificates.length === 0 ? (
         <div className="rounded-xl border border-dashed border-zinc-300 p-12 text-center bg-white">
           <Award className="h-10 w-10 text-zinc-400 mx-auto mb-3" />
-          <p className="text-zinc-650 text-sm font-medium">Bạn chưa nhận được chứng chỉ nào</p>
+          <p className="text-zinc-600 text-sm font-medium">Bạn chưa nhận được chứng chỉ nào</p>
           <p className="text-xs text-zinc-400 mt-1">Hãy hoàn thành 100% nội dung một khóa học bất kỳ để mở khóa chứng chỉ.</p>
         </div>
       ) : (
@@ -63,7 +63,7 @@ export default function CertificatesPage() {
               </div>
               <div className="flex-1 overflow-hidden">
                 <h3 className="font-bold text-zinc-800 text-sm truncate">{cert.courseTitle}</h3>
-                <p className="text-xs text-zinc-450 mt-1">Ngày cấp: {new Date(cert.issuedAt).toLocaleDateString('vi-VN')}</p>
+                <p className="text-xs text-zinc-500 font-semibold mt-1">Ngày cấp: {new Date(cert.issuedAt).toLocaleDateString('vi-VN')}</p>
                 
                 <div className="flex items-center gap-3 mt-4">
                   <button
@@ -88,14 +88,14 @@ export default function CertificatesPage() {
               <div className="flex items-center gap-3">
                 <button
                   onClick={handlePrint}
-                  className="flex items-center gap-1.5 rounded-lg border border-zinc-200 bg-white hover:bg-zinc-55/10 px-3 py-1.5 text-xs font-semibold text-zinc-700 transition-colors cursor-pointer"
+                  className="flex items-center gap-1.5 rounded-lg border border-zinc-200 bg-white hover:bg-zinc-100/10 px-3 py-1.5 text-xs font-semibold text-zinc-700 transition-colors cursor-pointer"
                 >
                   <Printer className="h-4 w-4" />
                   In / Lưu PDF
                 </button>
                 <button
                   onClick={() => setActiveCert(null)}
-                  className="rounded-lg p-1.5 hover:bg-zinc-100 text-zinc-55/80 hover:text-zinc-800 transition-colors cursor-pointer"
+                  className="rounded-lg p-1.5 hover:bg-zinc-100 text-zinc-50/80 hover:text-zinc-800 transition-colors cursor-pointer"
                 >
                   <X className="h-5 w-5" />
                 </button>
@@ -122,12 +122,12 @@ export default function CertificatesPage() {
                   "{activeCert.courseTitle}"
                 </p>
                 <p className="text-zinc-400 font-sans text-[10px] mt-4">
-                  Mã số chứng thực: <span className="font-semibold text-zinc-650 uppercase font-mono">{activeCert.certificateId}</span>
+                  Mã số chứng thực: <span className="font-semibold text-zinc-600 uppercase font-mono">{activeCert.certificateId}</span>
                 </p>
 
                 <div className="grid grid-cols-2 gap-8 pt-8 items-end">
                   <div className="space-y-1 text-center font-sans">
-                    <p className="text-sm font-semibold text-zinc-800 italic underline decoration-zinc-450 underline-offset-4">
+                    <p className="text-sm font-semibold text-zinc-800 italic underline decoration-zinc-400 underline-offset-4">
                       {activeCert.instructorName}
                     </p>
                     <p className="text-[10px] text-zinc-500 uppercase tracking-wider">Giảng Viên Hướng Dẫn</p>

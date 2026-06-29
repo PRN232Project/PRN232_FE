@@ -68,7 +68,7 @@ export default function UnifiedMessagesPage() {
         <img
           src={chatPartner?.image || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?q=80&w=128&auto=format&fit=crop'}
           alt={chatPartner?.fullName}
-          className="h-10 w-10 rounded-full object-cover border border-zinc-250"
+          className="h-10 w-10 rounded-full object-cover border border-zinc-300"
         />
         <div>
           <h2 className="text-sm font-bold text-zinc-950">{chatPartner?.fullName || 'Người nhận'}</h2>
@@ -105,7 +105,7 @@ export default function UnifiedMessagesPage() {
                           ? user?.role === 1 
                             ? 'bg-indigo-600 text-white rounded-tr-none' 
                             : 'bg-blue-600 text-white rounded-tr-none'
-                          : 'bg-white text-zinc-800 border border-zinc-150 rounded-tl-none'
+                          : 'bg-white text-zinc-800 border border-zinc-200 rounded-tl-none'
                       }`}
                     >
                       {msg.content}

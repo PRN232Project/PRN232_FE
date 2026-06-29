@@ -74,10 +74,10 @@ export const RoleNavMenu: React.FC<RoleNavMenuProps> = ({ role }) => {
       </nav>
 
       {/* Footer controls inside sidebar */}
-      <div className="border-t border-zinc-850 p-4 bg-zinc-950/60 space-y-2.5">
+      <div className="border-t border-zinc-800 p-4 bg-zinc-950/60 space-y-2.5">
         <a
           href="/"
-          className="flex w-full items-center justify-center gap-2 rounded-lg bg-zinc-850 hover:bg-zinc-800 py-2 text-xs font-semibold border border-zinc-700 text-zinc-300 transition-colors"
+          className="flex w-full items-center justify-center gap-2 rounded-lg bg-zinc-800 hover:bg-zinc-800 py-2 text-xs font-semibold border border-zinc-700 text-zinc-300 transition-colors"
         >
           <Home className="h-4 w-4" />
           Về Trang chủ

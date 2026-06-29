@@ -100,13 +100,13 @@ export default function AdminCoursesPage() {
         
         {courses.length > 0 && (
           <div className="relative max-w-xs w-full">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-zinc-400" />
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-zinc-500" />
             <input
               type="text"
               placeholder="Tìm theo tiêu đề hoặc giảng viên..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full rounded-lg border border-zinc-300 bg-white py-2 pl-9 pr-4 text-xs focus:border-blue-500 outline-none"
+              className="w-full rounded-lg border border-zinc-350 bg-white py-2 pl-9 pr-4 text-xs text-zinc-900 font-bold focus:border-indigo-500 outline-none placeholder:text-zinc-500"
             />
           </div>
         )}
@@ -136,7 +136,7 @@ export default function AdminCoursesPage() {
                 <div className="space-y-1 overflow-hidden">
                   <h3 className="font-bold text-zinc-950 text-base truncate">{course.title}</h3>
                   <p className="text-xs text-zinc-500 line-clamp-2 leading-relaxed">{course.description}</p>
-                  <div className="flex flex-wrap items-center gap-4 text-[10px] text-zinc-450 pt-2 font-medium">
+                  <div className="flex flex-wrap items-center gap-4 text-[10px] text-zinc-500 pt-2 font-semibold">
                     <span className="flex items-center gap-1">
                       <User className="h-3.5 w-3.5 text-zinc-400 animate-pulse" />
                       Giảng viên: <span className="font-bold text-zinc-700">{course.instructorName}</span>
@@ -144,7 +144,7 @@ export default function AdminCoursesPage() {
                     <span>•</span>
                     <span>Học phần: {course.modules?.length || 0} chương</span>
                     <span>•</span>
-                    <span>Học phí: <span className="font-bold text-zinc-850 text-blue-600">{formatVND(course.price)}</span></span>
+                    <span>Học phí: <span className="font-bold text-blue-600">{formatVND(course.price)}</span></span>
                   </div>
                 </div>
               </div>
@@ -160,7 +160,7 @@ export default function AdminCoursesPage() {
                 </a>
                 <button
                   onClick={() => openRejectModal(course.courseId)}
-                  className="flex-1 lg:flex-initial inline-flex items-center justify-center gap-1.5 rounded-lg bg-red-50 hover:bg-red-100 py-2.5 px-4 text-xs font-semibold text-red-650 transition-colors border border-red-200 shadow-sm cursor-pointer"
+                  className="flex-1 lg:flex-initial inline-flex items-center justify-center gap-1.5 rounded-lg bg-red-50 hover:bg-red-100 py-2.5 px-4 text-xs font-semibold text-red-600 transition-colors border border-red-200 shadow-sm cursor-pointer"
                 >
                   <XCircle className="h-4 w-4" />
                   Từ chối
@@ -196,7 +196,7 @@ export default function AdminCoursesPage() {
               Từ chối bài duyệt khóa học
             </h3>
             
-            <p className="text-xs text-zinc-550 mb-4 leading-relaxed">
+            <p className="text-xs text-zinc-500 mb-4 leading-relaxed">
               Vui lòng nhập lý do từ chối khóa học này. Giảng viên sẽ nhận được phản hồi chi tiết để tiến hành chỉnh sửa và nộp lại.
             </p>
 
@@ -214,7 +214,7 @@ export default function AdminCoursesPage() {
                 <button
                   type="button"
                   onClick={() => setRejectModalOpen(false)}
-                  className="rounded-lg border border-zinc-250 py-2 px-4 text-xs font-semibold text-zinc-650 hover:bg-zinc-50 transition-colors"
+                  className="rounded-lg border border-zinc-200 py-2 px-4 text-xs font-semibold text-zinc-700 hover:bg-zinc-50 transition-colors"
                 >
                   Hủy bỏ
                 </button>

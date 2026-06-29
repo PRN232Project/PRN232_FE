@@ -144,7 +144,7 @@ export default function AdminDashboard() {
 
           <div className="space-y-2 mt-4 border-t border-zinc-100 pt-4">
             {stats?.roleDistribution.map((entry, idx) => (
-              <div key={idx} className="flex items-center justify-between text-xs text-zinc-655">
+              <div key={idx} className="flex items-center justify-between text-xs text-zinc-700 font-semibold">
                 <div className="flex items-center gap-2">
                   <span className="h-3 w-3 rounded-full" style={{ backgroundColor: COLORS[idx % COLORS.length] }}></span>
                   <span>{entry.name}</span>

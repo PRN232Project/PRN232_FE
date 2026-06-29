@@ -39,7 +39,7 @@ export default function LoginPage() {
         <h2 className="mt-6 text-center text-3xl font-extrabold tracking-tight text-zinc-900">
           Đăng nhập vào OLP
         </h2>
-        <p className="mt-2 text-center text-sm text-zinc-650">
+        <p className="mt-2 text-center text-sm text-zinc-600">
           Nhập tài khoản để tiếp tục học tập hoặc giảng dạy
         </p>
       </div>
@@ -110,7 +110,7 @@ export default function LoginPage() {
           >
             <div>
               <span className="font-semibold block">Học viên (Student)</span>
-              <span className="text-xs text-zinc-550">student@olp.com</span>
+              <span className="text-xs text-zinc-500">student@olp.com</span>
             </div>
             <ArrowRight className="h-4 w-4 text-zinc-400" />
           </button>
@@ -121,7 +121,7 @@ export default function LoginPage() {
           >
             <div>
               <span className="font-semibold block">Giảng viên (Instructor)</span>
-              <span className="text-xs text-zinc-550">teacher@olp.com</span>
+              <span className="text-xs text-zinc-500">teacher@olp.com</span>
             </div>
             <ArrowRight className="h-4 w-4 text-zinc-400" />
           </button>
@@ -132,7 +132,7 @@ export default function LoginPage() {
           >
             <div>
               <span className="font-semibold block">Quản trị viên (Admin)</span>
-              <span className="text-xs text-zinc-555">admin@olp.com</span>
+              <span className="text-xs text-zinc-505">admin@olp.com</span>
             </div>
             <ArrowRight className="h-4 w-4 text-zinc-400" />
           </button>

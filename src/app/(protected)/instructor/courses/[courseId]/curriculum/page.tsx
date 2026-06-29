@@ -489,7 +489,7 @@ export default function CurriculumBuilderPage() {
         <div className="flex items-center gap-3">
           <button
             onClick={() => router.push('/instructor/courses')}
-            className="flex h-8 w-8 items-center justify-center rounded-lg border border-zinc-200 bg-white text-zinc-650 hover:bg-zinc-50 transition-colors cursor-pointer"
+            className="flex h-8 w-8 items-center justify-center rounded-lg border border-zinc-200 bg-white text-zinc-600 hover:bg-zinc-50 transition-colors cursor-pointer"
           >
             <ArrowLeft className="h-4.5 w-4.5" />
           </button>
@@ -503,7 +503,7 @@ export default function CurriculumBuilderPage() {
           <button
             onClick={handleSaveCurriculum}
             disabled={saving || submitting}
-            className="inline-flex items-center justify-center gap-1.5 rounded-lg border border-zinc-250 bg-white hover:bg-zinc-50 py-2.5 px-4 text-xs font-semibold text-zinc-700 transition-colors shadow-sm disabled:opacity-50 cursor-pointer"
+            className="inline-flex items-center justify-center gap-1.5 rounded-lg border border-zinc-300 bg-white hover:bg-zinc-50 py-2.5 px-4 text-xs font-semibold text-zinc-700 transition-colors shadow-sm disabled:opacity-50 cursor-pointer"
           >
             {saving ? (
               <>
@@ -604,7 +604,7 @@ export default function CurriculumBuilderPage() {
                               {/* Lesson Header Row */}
                               <div
                                 onClick={() => toggleLesson(lesson.lessonId)}
-                                className="px-5 py-3.5 bg-zinc-50/50 border-b border-zinc-150 flex items-center justify-between cursor-pointer hover:bg-zinc-50 transition-colors select-none"
+                                className="px-5 py-3.5 bg-zinc-50/50 border-b border-zinc-200 flex items-center justify-between cursor-pointer hover:bg-zinc-50 transition-colors select-none"
                               >
                                 <div className="flex items-center gap-3 overflow-hidden">
                                   <BookOpen className="h-4 w-4 text-zinc-400" />
@@ -660,7 +660,7 @@ export default function CurriculumBuilderPage() {
                                       return (
                                         <div
                                           key={item.lessonItemId}
-                                          className="flex items-center justify-between p-3 bg-white border border-zinc-150 rounded-lg shadow-sm hover:shadow transition-shadow duration-150"
+                                          className="flex items-center justify-between p-3 bg-white border border-zinc-200 rounded-lg shadow-sm hover:shadow transition-shadow duration-150"
                                         >
                                           <div className="flex items-center gap-3">
                                             <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${
@@ -680,7 +680,7 @@ export default function CurriculumBuilderPage() {
                                             </div>
                                             <div>
                                               <span className="text-xs font-bold text-zinc-800">{item.title}</span>
-                                              <div className="flex items-center gap-2 text-[10px] text-zinc-450 mt-0.5">
+                                              <div className="flex items-center gap-2 text-[10px] text-zinc-500 mt-0.5">
                                                 <span className="font-semibold uppercase text-zinc-500">
                                                   {item.type === LessonItemType.Video ? 'Video bài giảng' : item.type === LessonItemType.Article ? 'Bài viết tự học' : 'Bài trắc nghiệm'}
                                                 </span>
@@ -790,13 +790,13 @@ export default function CurriculumBuilderPage() {
               <button
                 type="button"
                 onClick={() => setIsAddingModule(false)}
-                className="rounded-lg border border-zinc-200 hover:bg-zinc-50 px-4 py-2 text-xs font-semibold text-zinc-650 transition-colors"
+                className="rounded-lg border border-zinc-200 hover:bg-zinc-50 px-4 py-2 text-xs font-semibold text-zinc-600 transition-colors"
               >
                 Hủy bỏ
               </button>
               <button
                 type="submit"
-                className="rounded-lg bg-zinc-950 hover:bg-zinc-850 py-2 px-4 text-xs font-semibold text-white shadow transition-all cursor-pointer"
+                className="rounded-lg bg-zinc-950 hover:bg-zinc-800 py-2 px-4 text-xs font-semibold text-white shadow transition-all cursor-pointer"
               >
                 Tạo chương học
               </button>
@@ -825,7 +825,7 @@ export default function CurriculumBuilderPage() {
             <div className="w-screen max-w-2xl bg-white shadow-2xl flex flex-col h-full transform transition-transform duration-300 translate-x-0 relative">
               
               {/* Sheet Header */}
-              <div className="px-6 py-5 bg-zinc-50 border-b border-zinc-150 flex items-center justify-between sticky top-0 z-10">
+              <div className="px-6 py-5 bg-zinc-50 border-b border-zinc-200 flex items-center justify-between sticky top-0 z-10">
                 <div className="flex items-center gap-3">
                   <div className={`w-9 h-9 rounded-lg flex items-center justify-center text-white ${
                     selectedType === 'video' ? 'bg-red-500' : selectedType === 'reading' ? 'bg-blue-500' : 'bg-amber-500'
@@ -851,7 +851,7 @@ export default function CurriculumBuilderPage() {
                 <button
                   type="button"
                   onClick={() => setSheetOpen(false)}
-                  className="p-1.5 rounded-full hover:bg-zinc-200 border border-zinc-200 shadow-sm text-zinc-400 hover:text-zinc-650 transition bg-white"
+                  className="p-1.5 rounded-full hover:bg-zinc-200 border border-zinc-200 shadow-sm text-zinc-400 hover:text-zinc-600 transition bg-white"
                 >
                   <X className="h-4 w-4" />
                 </button>
@@ -881,7 +881,7 @@ export default function CurriculumBuilderPage() {
                         <Upload className="h-8 w-8 text-zinc-400 mx-auto mb-2" />
                         
                         <div className="flex justify-center">
-                          <label className="cursor-pointer bg-white px-3.5 py-2 border border-zinc-250 rounded-lg text-[10px] font-bold text-indigo-650 hover:bg-zinc-50 shadow-sm transition">
+                          <label className="cursor-pointer bg-white px-3.5 py-2 border border-zinc-300 rounded-lg text-[10px] font-bold text-indigo-650 hover:bg-zinc-50 shadow-sm transition">
                             <span>Chọn tệp MP4</span>
                             <input
                               type="file"
@@ -898,7 +898,7 @@ export default function CurriculumBuilderPage() {
                       {/* Video upload progress */}
                       {isUploadingVideo && (
                         <div className="space-y-1.5">
-                          <div className="flex justify-between text-[10px] font-semibold text-zinc-650">
+                          <div className="flex justify-between text-[10px] font-semibold text-zinc-600">
                             <span>Đang xử lý tải video...</span>
                             <span>{uploadProgress}%</span>
                           </div>
@@ -916,7 +916,7 @@ export default function CurriculumBuilderPage() {
                       )}
                     </div>
 
-                    <div className="pt-6 border-t border-zinc-150">
+                    <div className="pt-6 border-t border-zinc-200">
                       <button
                         type="submit"
                         disabled={isUploadingVideo || !videoUrl}
@@ -955,7 +955,7 @@ export default function CurriculumBuilderPage() {
                       />
                     </div>
 
-                    <div className="pt-6 border-t border-zinc-150">
+                    <div className="pt-6 border-t border-zinc-200">
                       <button
                         type="submit"
                         className="w-full py-3.5 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-xs font-bold shadow-lg transition-all flex items-center justify-center gap-1.5 cursor-pointer"
@@ -992,7 +992,7 @@ export default function CurriculumBuilderPage() {
                       </div>
 
                       <div className="flex flex-col sm:flex-row gap-3 items-center">
-                        <label className="cursor-pointer bg-white px-3 py-1.5 border border-zinc-250 rounded-lg text-[10px] font-bold text-zinc-700 hover:bg-zinc-50 shadow-sm transition">
+                        <label className="cursor-pointer bg-white px-3 py-1.5 border border-zinc-300 rounded-lg text-[10px] font-bold text-zinc-700 hover:bg-zinc-50 shadow-sm transition">
                           <span>Chọn PDF</span>
                           <input
                             type="file"
@@ -1048,7 +1048,7 @@ export default function CurriculumBuilderPage() {
                           )}
 
                           <div className="flex gap-3">
-                            <span className="h-6 w-6 rounded-full bg-zinc-250 text-zinc-700 flex items-center justify-center text-[11px] font-bold shrink-0 mt-1 shadow-inner">
+                            <span className="h-6 w-6 rounded-full bg-zinc-300 text-zinc-700 flex items-center justify-center text-[11px] font-bold shrink-0 mt-1 shadow-inner">
                               {qIdx + 1}
                             </span>
                             <div className="flex-1 space-y-2">
@@ -1146,7 +1146,7 @@ export default function CurriculumBuilderPage() {
                       </button>
                     </div>
 
-                    <div className="pt-6 border-t border-zinc-150">
+                    <div className="pt-6 border-t border-zinc-200">
                       <button
                         type="submit"
                         className="w-full py-3.5 bg-amber-500 hover:bg-amber-600 text-white rounded-xl text-xs font-bold shadow-lg transition-all flex items-center justify-center gap-1.5 cursor-pointer"
