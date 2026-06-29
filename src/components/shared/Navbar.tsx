@@ -9,6 +9,8 @@ export const Navbar: React.FC = () => {
   const { user, logout, isAdmin, isInstructor, isStudent } = useAuth();
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
+  const [visible, setVisible] = useState(true);
+  const [prevScrollPos, setPrevScrollPos] = useState(0);
   const router = useRouter();
   const searchInputRef = useRef<HTMLInputElement>(null);
 
@@ -23,6 +25,21 @@ export const Navbar: React.FC = () => {
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, []);
+
+  // Hide/Show navbar on scroll
+  useEffect(() => {
+    const handleScroll = () => {
+      const currentScrollPos = window.scrollY;
+      // Show if scrolling up, or if at the very top of the page
+      const isVisible = prevScrollPos > currentScrollPos || currentScrollPos < 10;
+      
+      setVisible(isVisible);
+      setPrevScrollPos(currentScrollPos);
+    };
+
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, [prevScrollPos]);
 
   const getDashboardLink = () => {
     if (isAdmin) return '/admin/dashboard';
@@ -40,7 +57,7 @@ export const Navbar: React.FC = () => {
   };
 
   return (
-    <header className="sticky top-0 z-40 w-full transition-all duration-300 glass-navbar shadow-sm shadow-zinc-100/50">
+    <header className={`sticky top-0 z-40 w-full transition-transform duration-300 transform glass-navbar shadow-sm shadow-zinc-100/50 ${visible ? 'translate-y-0' : '-translate-y-full'}`}>
       <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8 gap-6">
         
         {/* Left Area: Logo & Navigation */}

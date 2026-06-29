@@ -1,5 +1,6 @@
 import React from 'react';
 import Navbar from '@/components/shared/Navbar';
+import Footer from '@/components/shared/Footer';
 
 export default function PublicLayout({
   children,
@@ -12,6 +13,7 @@ export default function PublicLayout({
       <main className="flex-1">
         {children}
       </main>
+      <Footer />
     </div>
   );
 }

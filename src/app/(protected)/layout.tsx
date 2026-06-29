@@ -4,6 +4,7 @@ import React, { useEffect } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
 import { useAuth } from '@/context/AuthContext';
 import Navbar from '@/components/shared/Navbar';
+import Footer from '@/components/shared/Footer';
 
 export default function ProtectedLayout({
   children,
@@ -57,6 +58,7 @@ export default function ProtectedLayout({
       <main className="flex-1 max-w-7xl w-full mx-auto p-4 sm:p-6 lg:p-8">
         {children}
       </main>
+      <Footer />
     </div>
   );
 }
