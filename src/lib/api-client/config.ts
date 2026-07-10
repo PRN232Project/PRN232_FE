@@ -40,9 +40,12 @@ apiClient.interceptors.response.use(
         window.location.href = '/auth/login';
       }
     }
-    // Trích xuất thông điệp lỗi chi tiết từ API Backend
+    // Trích xuất thông điệp lỗi chi tiết từ API Backend kèm thông tin request
     const backendMessage = error.response?.data?.errorMessage || error.response?.data?.message;
-    const finalError = backendMessage ? new Error(backendMessage) : error;
+    const requestInfo = error.config ? ` [${error.config.method?.toUpperCase()} ${error.config.url}]` : '';
+    const finalError = backendMessage 
+      ? new Error(`${backendMessage}${requestInfo}`) 
+      : new Error(`${error.message}${requestInfo}`);
     return Promise.reject(finalError);
   }
 );
