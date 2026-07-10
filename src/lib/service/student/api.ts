@@ -75,6 +75,19 @@ export const studentService = {
     }
   },
 
+  checkoutCourse: async (courseId: string): Promise<{ checkoutUrl: string }> => {
+    if (USE_MOCK) {
+      await delay(800);
+      return { checkoutUrl: 'mock-sandbox-success' };
+    } else {
+      const res = await apiClient.post<any>(`/student/courses/${courseId}/checkout`);
+      if (!res.data.isSuccess) {
+        throw new Error(res.data.errorMessage || 'Lỗi khi tạo liên kết thanh toán');
+      }
+      return res.data.result;
+    }
+  },
+
   getProgress: async (userId: string, courseId: string): Promise<UserLessonProgress[]> => {
     if (USE_MOCK) {
       await delay(300);

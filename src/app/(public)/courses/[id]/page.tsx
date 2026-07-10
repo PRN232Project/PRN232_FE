@@ -44,7 +44,7 @@ export default function CourseDetailPage() {
   }, [courseId, user]);
 
   const handleEnroll = async () => {
-    if (!user) {
+    if (!user || !course) {
       router.push(`/auth/login?redirect=/courses/${courseId}`);
       return;
     }
@@ -52,9 +52,29 @@ export default function CourseDetailPage() {
 
     setActionLoading(true);
     try {
-      const enrollment = await studentService.enrollInCourse(user.userId, courseId);
-      setEnrolled(enrollment);
-      router.push(`/learning/${courseId}`);
+      if (course.price > 0) {
+        // Khóa học có phí -> Gọi API tạo cổng thanh toán
+        const payRes = await studentService.checkoutCourse(courseId);
+        if (payRes.checkoutUrl === 'mock-sandbox-success') {
+          alert('Thanh toán Sandbox giả lập thành công! Hệ thống đã ghi danh bạn vào lớp học.');
+          setEnrolled({
+            enrollmentId: 'mock-enrollment-id',
+            userId: user.userId,
+            courseId,
+            enrolledAt: new Date().toISOString(),
+            progressPercent: 0
+          });
+          router.push(`/learning/${courseId}`);
+        } else if (payRes.checkoutUrl) {
+          // Chuyển hướng tới PayOS
+          window.location.href = payRes.checkoutUrl;
+        }
+      } else {
+        // Khóa học miễn phí -> Ghi danh trực tiếp
+        const res = await studentService.enrollInCourse(user.userId, courseId);
+        setEnrolled(res);
+        router.push(`/learning/${courseId}`);
+      }
     } catch (err: any) {
       alert(err.message || 'Lỗi khi đăng ký khóa học');
     } finally {
