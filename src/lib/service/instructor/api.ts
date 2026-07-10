@@ -137,6 +137,41 @@ export const instructorService = {
     }
   },
 
+  getCourseModules: async (courseId: string): Promise<Module[]> => {
+    if (USE_MOCK) {
+      await delay(500);
+      const course = mockCourses.find((c) => c.courseId === courseId);
+      return course?.modules || [];
+    } else {
+      const res = await apiClient.get<any>(`/instructor/courses/${courseId}/modules`);
+      if (!res.data.isSuccess) {
+        throw new Error(res.data.errorMessage || 'Lỗi khi tải đề cương khóa học');
+      }
+      return (res.data.result || []).map((m: any) => ({
+        moduleId: m.moduleId,
+        courseId: m.courseId,
+        title: m.name,
+        description: m.description || '',
+        orderIndex: m.index || 0,
+        lessons: (m.lessons || []).map((l: any) => ({
+          lessonId: l.lessonId,
+          moduleId: l.moduleId,
+          title: l.title,
+          content: l.content || '',
+          orderIndex: l.orderIndex || 0,
+          lessonItems: (l.lessonItems || []).map((li: any) => ({
+            lessonItemId: li.lessonItemId,
+            lessonId: li.lessonId,
+            title: li.title || 'Học liệu',
+            type: li.type,
+            durationMinutes: li.durationMinutes || 15,
+            orderIndex: li.orderIndex || 0
+          }))
+        }))
+      }));
+    }
+  },
+
   saveCurriculum: async (courseId: string, modules: Module[]): Promise<void> => {
     if (USE_MOCK) {
       await delay(800);
@@ -158,7 +193,7 @@ export const instructorService = {
           if (!createModRes.data.isSuccess) {
             throw new Error(createModRes.data.errorMessage || 'Lỗi khi tạo chương học');
           }
-          currentModuleId = createModRes.data.result;
+          currentModuleId = createModRes.data.result.moduleId;
         } else {
           const updateModRes = await apiClient.put<any>(`/instructor/modules/${m.moduleId}`, {
             moduleId: m.moduleId,
@@ -173,7 +208,9 @@ export const instructorService = {
         
         if (m.lessons) {
           for (const l of m.lessons) {
-            const isNewLesson = l.lessonId.startsWith('lesson-');
+            let currentLessonId = l.lessonId;
+            const isNewLesson = currentLessonId.startsWith('lesson-') || currentLessonId.startsWith('les-mock-');
+            
             if (isNewLesson) {
               const createLessRes = await apiClient.post<any>(`/instructor/modules/${currentModuleId}/lessons`, {
                 title: l.title,
@@ -184,6 +221,7 @@ export const instructorService = {
               if (!createLessRes.data.isSuccess) {
                 throw new Error(createLessRes.data.errorMessage || 'Lỗi khi tạo bài học');
               }
+              currentLessonId = createLessRes.data.result.lessonId;
             } else {
               const updateLessRes = await apiClient.put<any>(`/instructor/lessons/${l.lessonId}`, {
                 title: l.title,
@@ -192,6 +230,45 @@ export const instructorService = {
               });
               if (!updateLessRes.data.isSuccess) {
                 throw new Error(updateLessRes.data.errorMessage || 'Lỗi khi cập nhật bài học');
+              }
+            }
+
+            // Đồng bộ học liệu của bài học
+            const items = l.lessonItems || [];
+            for (const item of items) {
+              const isNewItem = item.lessonItemId.startsWith('item-');
+              if (isNewItem) {
+                if (item.type === 0) { // Video
+                  await apiClient.post<any>(`/instructor/lessons/${currentLessonId}/items/video`, {
+                    title: item.title,
+                    videoSourceType: 1, // YouTube URL
+                    videoUrl: 'https://www.youtube.com/watch?v=dQw4w9WgXcQ', // default placeholder
+                    orderIndex: item.orderIndex || 1
+                  });
+                } else if (item.type === 1) { // Article / Reading
+                  await apiClient.post<any>(`/instructor/lessons/${currentLessonId}/items/reading`, {
+                    title: item.title,
+                    content: 'Nội dung bài viết tự học dành cho học viên.',
+                    orderIndex: item.orderIndex || 1
+                  });
+                } else if (item.type === 2 && item.gradedItem) { // Quiz
+                  const g = item.gradedItem;
+                  await apiClient.post<any>(`/instructor/lessons/${currentLessonId}/items/quiz`, {
+                    title: g.title || item.title,
+                    orderIndex: item.orderIndex || 1,
+                    questions: (g.questions || []).map((q: any, qIdx: number) => ({
+                      content: q.questionText,
+                      points: q.points || 10,
+                      orderIndex: qIdx + 1,
+                      explanation: '',
+                      options: (q.answerOptions || []).map((o: any, oIdx: number) => ({
+                        text: o.optionText,
+                        isCorrect: o.isCorrect,
+                        orderIndex: oIdx + 1
+                      }))
+                    }))
+                  });
+                }
               }
             }
           }

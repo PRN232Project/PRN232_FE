@@ -13,6 +13,7 @@ import {
   courseService,
   instructorService
 } from '@/lib/service';
+import { USE_MOCK } from '@/lib/api-client';
 import {
   ArrowLeft,
   Plus,
@@ -94,15 +95,25 @@ export default function CurriculumBuilderPage() {
       try {
         const data = await courseService.getCourseById(courseId);
         setCourse(data);
-        const mods = data.modules || [];
+        
+        let mods: Module[] = [];
+        if (USE_MOCK) {
+          mods = data.modules || [];
+        } else {
+          try {
+            mods = await instructorService.getCourseModules(courseId);
+          } catch (err) {
+            console.error('Error fetching modules, falling back to empty list:', err);
+          }
+        }
         setModules(mods);
         
         // Expand first module by default
         if (mods.length > 0) {
           setExpandedModules({ [mods[0].moduleId]: true });
         }
-      } catch (err) {
-        console.error(err);
+      } catch (err: any) {
+        alert(err.message || 'Lỗi khi tải thông tin khóa học');
       } finally {
         setLoading(false);
       }
