@@ -1,11 +1,18 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { GoogleGenerativeAI, SchemaType } from '@google/generative-ai';
 import * as pdf from 'pdf-parse';
+import * as pdfjs from 'pdfjs-dist/legacy/build/pdf.mjs';
+import path from 'path';
+import { pathToFileURL } from 'url';
 
 export const maxDuration = 60; // Allow longer execution time for PDF processing
 
 export async function POST(req: NextRequest) {
   try {
+    // Configure PDF.js worker path to point to node_modules to avoid Next.js chunk loading issues
+    const workerPath = path.join(process.cwd(), 'node_modules', 'pdfjs-dist', 'legacy', 'build', 'pdf.worker.mjs');
+    pdfjs.GlobalWorkerOptions.workerSrc = pathToFileURL(workerPath).toString();
+
     const formData = await req.formData();
     const file = formData.get('file') as File;
     const courseTitle = formData.get('courseTitle') as string || 'Khóa học';
@@ -44,7 +51,7 @@ export async function POST(req: NextRequest) {
     }
 
     // 2. Call Gemini
-    const apiKey = process.env.GEMINI_API_KEY || 'AIzaSyCTIkWsU6y4sjlRGs0g-lrJnL427pn8fR4';
+    const apiKey = process.env.GEMINI_API_KEY || 'AIzaSyBfFLOSzZ5FY8yrggkHt5iGEH9lIVPJpK0';
     const genAI = new GoogleGenerativeAI(apiKey);
     
     // Use gemini-2.5-flash which is fast and supports JSON responseSchema
@@ -96,7 +103,13 @@ ${textContent.substring(0, 30000)}
     });
 
     const responseText = result.response.text().trim();
-    const questions = JSON.parse(responseText);
+    let questions;
+    try {
+      questions = JSON.parse(responseText);
+    } catch (parseError: any) {
+      console.error('Failed to parse Gemini JSON response. Raw response text was:', responseText);
+      throw new Error(`JSON Parse Error: ${parseError.message}. Raw: ${responseText.substring(0, 200)}...`);
+    }
 
     return NextResponse.json({
       isSuccess: true,

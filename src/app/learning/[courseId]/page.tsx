@@ -6,6 +6,13 @@ import { useAuth } from '@/context/AuthContext';
 import { Course, LessonItem, GradedAttempt, UserLessonProgress, LessonItemType, courseService, studentService } from '@/lib/service';
 import { ArrowLeft, Play, BookOpen, FileText, CheckCircle2, ChevronRight, FileDown, GraduationCap, Award, RefreshCw } from 'lucide-react';
 
+const getYoutubeId = (url: string) => {
+  if (!url) return null;
+  const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|\&v=)([^#\&\?]*).*/;
+  const match = url.match(regExp);
+  return (match && match[2].length === 11) ? match[2] : null;
+};
+
 export default function LearningPage() {
   const params = useParams();
   const router = useRouter();
@@ -26,7 +33,7 @@ export default function LearningPage() {
   const loadLearningData = async () => {
     if (!user || !courseId) return;
     try {
-      const courseData = await courseService.getCourseById(courseId);
+      const courseData = await studentService.getLearningDetails(courseId);
       setCourse(courseData);
 
       const prog = await studentService.getProgress(user.userId, courseId);
@@ -175,33 +182,44 @@ export default function LearningPage() {
           {selectedItem ? (
             <div className="max-w-4xl mx-auto w-full space-y-6 flex-1 flex flex-col">
               
-              {/* Render dynamic viewer depending on LessonItemType */}
-              {selectedItem.type === LessonItemType.Video && (
-                <div className="aspect-video w-full rounded-2xl overflow-hidden bg-black shadow-lg">
-                  <iframe
-                    className="w-full h-full"
-                    src="https://www.youtube.com/embed/dQw4w9WgXcQ" // Standard mock player
-                    title={selectedItem.title}
-                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                    allowFullScreen
-                  />
-                </div>
-              )}
+              {selectedItem.type === LessonItemType.Video && (() => {
+                const videoUrl = selectedItem.url || selectedItem.videoUrl || '';
+                const ytId = getYoutubeId(videoUrl);
+                if (ytId) {
+                  return (
+                    <div className="aspect-video w-full rounded-2xl overflow-hidden bg-black shadow-lg">
+                      <iframe
+                        className="w-full h-full"
+                        src={`https://www.youtube.com/embed/${ytId}`}
+                        title={selectedItem.title}
+                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                        allowFullScreen
+                      />
+                    </div>
+                  );
+                } else {
+                  return (
+                    <div className="aspect-video w-full rounded-2xl overflow-hidden bg-black shadow-lg flex items-center justify-center">
+                      {videoUrl ? (
+                        <video
+                          src={videoUrl}
+                          controls
+                          className="w-full h-full object-contain"
+                        />
+                      ) : (
+                        <p className="text-zinc-500 text-sm">Không tìm thấy video bài giảng.</p>
+                      )}
+                    </div>
+                  );
+                }
+              })()}
 
               {selectedItem.type === LessonItemType.Article && (
-                <div className="rounded-2xl bg-zinc-800 p-6 md:p-8 border border-zinc-800 prose prose-invert max-w-none shadow-md">
-                  <h1 className="text-xl md:text-2xl font-extrabold text-white mb-4">{selectedItem.title}</h1>
-                  <p className="text-sm text-zinc-300 leading-relaxed mb-4">
-                    Chào mừng bạn đến với nội dung bài đọc chi tiết của khóa học. Lớp học này thiết lập tài liệu tự học kèm theo hướng dẫn thực hành.
-                  </p>
-                  <h3 className="text-base font-bold text-zinc-100 mt-6 mb-2">1. Định nghĩa & Lý thuyết cốt lõi</h3>
-                  <p className="text-sm text-zinc-300 leading-relaxed mb-4">
-                    Việc xây dựng kiến trúc Web API chuẩn yêu cầu tối ưu hóa đường truyền dữ liệu và thiết lập các DTO (Data Transfer Objects) rõ ràng. Điều này giúp ngăn chặn phơi bày thực thể cơ sở dữ liệu trực tiếp ra bên ngoài và tăng cường bảo mật thông tin.
-                  </p>
-                  <h3 className="text-base font-bold text-zinc-100 mt-6 mb-2">2. Hướng dẫn Thực hành</h3>
-                  <p className="text-sm text-zinc-300 leading-relaxed">
-                    Hãy xem tệp đính kèm ở góc dưới để thực hiện tải bài viết slide hướng dẫn chi tiết và chạy dotnet migration trên cơ sở dữ liệu local của bạn.
-                  </p>
+                <div className="rounded-2xl bg-zinc-800 p-6 md:p-8 border border-zinc-800 prose prose-invert max-w-none shadow-md space-y-4">
+                  <h1 className="text-xl md:text-2xl font-extrabold text-white mb-2">{selectedItem.title}</h1>
+                  <div className="text-sm text-zinc-300 leading-relaxed whitespace-pre-wrap">
+                    {selectedItem.content || 'Không có nội dung chi tiết cho bài đọc này.'}
+                  </div>
                 </div>
               )}
 

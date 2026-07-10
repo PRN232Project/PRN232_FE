@@ -275,5 +275,86 @@ export const studentService = {
         instructorName: c.instructorName || 'Giảng viên'
       }));
     }
+  },
+
+  getLearningDetails: async (courseId: string): Promise<any> => {
+    if (USE_MOCK) {
+      await delay(500);
+      const course = mockCourses.find((c) => c.courseId === courseId && !c.isDeleted);
+      if (!course) throw new Error('Không tìm thấy khóa học này');
+      return course;
+    } else {
+      const res = await apiClient.get<any>(`/student/courses/${courseId}/learning`);
+      if (!res.data.isSuccess) {
+        throw new Error(res.data.errorMessage || 'Lỗi khi tải nội dung học tập');
+      }
+      const data = res.data.result;
+      
+      // Map StudentLearningDetailResponse to Course structure expected by frontend
+      return {
+        courseId: data.courseId,
+        title: data.title,
+        description: data.description || '',
+        price: 0,
+        image: '',
+        status: 2, // Published
+        languageId: '',
+        createdBy: '',
+        createdAt: new Date().toISOString(),
+        isDeleted: false,
+        enrollmentCount: 0,
+        modules: (data.modules || []).map((m: any) => ({
+          moduleId: m.moduleId,
+          courseId: data.courseId,
+          title: m.title,
+          index: m.orderIndex,
+          lessons: (m.lessons || []).map((l: any) => ({
+            lessonId: l.lessonId,
+            moduleId: m.moduleId,
+            title: l.title,
+            description: l.description || '',
+            orderIndex: l.orderIndex,
+            estimatedMinutes: l.estimatedMinutes || 0,
+            lessonItems: (l.materials || []).map((li: any) => ({
+              lessonItemId: li.lessonItemId,
+              lessonId: l.lessonId,
+              title: li.title,
+              type: li.type, // Enum values
+              orderIndex: li.orderIndex,
+              durationMinutes: li.durationMinutes || 0,
+              url: li.videoUrl || '',
+              videoUrl: li.videoUrl || '',
+              content: li.content || '',
+              lessonResources: (li.lessonResources || []).map((lr: any) => ({
+                lessonResourceId: lr.lessonResourceId,
+                lessonItemId: li.lessonItemId,
+                title: lr.title,
+                resourceUrl: lr.resourceUrl || '',
+                orderIndex: lr.orderIndex
+              })),
+              gradedItem: li.quiz ? {
+                gradedItemId: li.quiz.gradedItemId,
+                lessonItemId: li.lessonItemId,
+                title: li.quiz.title || 'Quiz',
+                passingScore: 80,
+                questions: (li.quiz.questions || []).map((q: any) => ({
+                  questionId: q.questionId,
+                  gradedItemId: li.quiz.gradedItemId,
+                  questionText: q.content,
+                  orderIndex: q.orderIndex,
+                  answerOptions: (q.options || []).map((ao: any) => ({
+                    answerOptionId: ao.answerOptionId,
+                    questionId: q.questionId,
+                    optionText: ao.text,
+                    isCorrect: false,
+                    orderIndex: ao.orderIndex
+                  }))
+                }))
+              } : undefined
+            }))
+          }))
+        }))
+      };
+    }
   }
 };

@@ -62,6 +62,7 @@ export interface LessonItem {
   lessonResources?: LessonResource[];
   content?: string;
   videoUrl?: string;
+  url?: string;
   videoFile?: File;
   videoSourceType?: number;
 }

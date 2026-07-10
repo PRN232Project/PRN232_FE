@@ -73,7 +73,7 @@ function PaymentSuccessContent() {
 
         <div className="flex flex-col gap-3 mt-6">
           <button
-            onClick={() => router.push('/student/courses')}
+            onClick={() => router.push('/dashboard')}
             className="flex w-full items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 hover:opacity-95 py-3.5 text-xs font-bold text-white shadow-md shadow-blue-500/10 transition-all cursor-pointer"
           >
             <BookOpen className="h-4 w-4" />
