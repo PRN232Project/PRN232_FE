@@ -63,7 +63,7 @@ export default function CreateCoursePage() {
             value={title}
             onChange={(e) => setTitle(e.target.value)}
             placeholder="Ví dụ: Lập trình C# cơ bản từ zero..."
-            className="block w-full rounded-lg border border-zinc-300 px-3.5 py-2 text-sm text-zinc-955/80 focus:border-indigo-500 focus:outline-none"
+            className="block w-full rounded-lg border border-zinc-300 px-3.5 py-2 text-sm text-zinc-900 focus:border-indigo-500 focus:outline-none"
           />
         </div>
 
@@ -77,7 +77,7 @@ export default function CreateCoursePage() {
             value={description}
             onChange={(e) => setDescription(e.target.value)}
             placeholder="Viết mô tả tóm tắt nội dung học tập và kỹ năng đạt được sau khóa học..."
-            className="block w-full rounded-lg border border-zinc-300 px-3.5 py-2 text-sm text-zinc-955/80 focus:border-indigo-500 focus:outline-none"
+            className="block w-full rounded-lg border border-zinc-300 px-3.5 py-2 text-sm text-zinc-900 focus:border-indigo-500 focus:outline-none"
           />
         </div>
 
@@ -93,7 +93,7 @@ export default function CreateCoursePage() {
               step={1000}
               value={price}
               onChange={(e) => setPrice(parseInt(e.target.value) || 0)}
-              className="block w-full rounded-lg border border-zinc-300 px-3.5 py-2 text-sm text-zinc-955/80 focus:border-indigo-500 focus:outline-none"
+              className="block w-full rounded-lg border border-zinc-300 px-3.5 py-2 text-sm text-zinc-900 focus:border-indigo-500 focus:outline-none"
             />
           </div>
 
@@ -121,7 +121,7 @@ export default function CreateCoursePage() {
             value={image}
             onChange={(e) => setImage(e.target.value)}
             placeholder="Link ảnh bìa từ Unsplash..."
-            className="block w-full rounded-lg border border-zinc-300 px-3.5 py-2 text-sm text-zinc-955/80 focus:border-indigo-500 focus:outline-none"
+            className="block w-full rounded-lg border border-zinc-300 px-3.5 py-2 text-sm text-zinc-900 focus:border-indigo-500 focus:outline-none"
           />
           <p className="text-[10px] text-zinc-400 mt-1">Để trống để sử dụng ảnh mặc định của hệ thống.</p>
         </div>
