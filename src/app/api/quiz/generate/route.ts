@@ -26,8 +26,8 @@ export async function POST(req: NextRequest) {
     } else if (file.type === 'application/pdf') {
       const arrayBuffer = await file.arrayBuffer();
       const buffer = Buffer.from(arrayBuffer);
-      const parser = typeof pdf === 'function' ? pdf : (pdf as any).default;
-      const parsed = await parser(buffer);
+      const parser = new pdf.PDFParse({ data: buffer });
+      const parsed = await parser.getText();
       textContent = parsed.text;
     } else {
       return NextResponse.json(
