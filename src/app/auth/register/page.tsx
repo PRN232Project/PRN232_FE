@@ -11,16 +11,22 @@ export default function RegisterPage() {
   const router = useRouter();
   const [fullName, setFullName] = useState('');
   const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
   const [role, setRole] = useState<UserRole>(UserRole.Student);
   const [error, setError] = useState<string | null>(null);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
+    if (password !== confirmPassword) {
+      setError('Mật khẩu và xác nhận mật khẩu không khớp');
+      return;
+    }
     try {
-      await register(fullName, email, role);
-      // Redirect to OTP verification page
-      router.push(`/auth/verify?email=${encodeURIComponent(email)}`);
+      await register(fullName, email, role, password, confirmPassword);
+      // Redirect straight to login page since backend auto-verifies
+      router.push('/auth/login?registered=true');
     } catch (err: any) {
       setError(err.message || 'Đăng ký thất bại, vui lòng thử lại');
     }
@@ -75,6 +81,36 @@ export default function RegisterPage() {
               onChange={(e) => setEmail(e.target.value)}
               className="block w-full rounded-lg border border-zinc-300 px-3 py-2 text-zinc-900 placeholder-zinc-400 focus:border-indigo-500 focus:outline-none focus:ring-indigo-500 sm:text-sm"
               placeholder="nva@example.com"
+            />
+          </div>
+
+          <div>
+            <label htmlFor="password" className="block text-sm font-medium text-zinc-700 mb-1">
+              Mật khẩu
+            </label>
+            <input
+              id="password"
+              type="password"
+              required
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              className="block w-full rounded-lg border border-zinc-300 px-3 py-2 text-zinc-900 placeholder-zinc-400 focus:border-indigo-500 focus:outline-none focus:ring-indigo-500 sm:text-sm"
+              placeholder="••••••••"
+            />
+          </div>
+
+          <div>
+            <label htmlFor="confirmPassword" className="block text-sm font-medium text-zinc-700 mb-1">
+              Xác nhận mật khẩu
+            </label>
+            <input
+              id="confirmPassword"
+              type="password"
+              required
+              value={confirmPassword}
+              onChange={(e) => setConfirmPassword(e.target.value)}
+              className="block w-full rounded-lg border border-zinc-300 px-3 py-2 text-zinc-900 placeholder-zinc-400 focus:border-indigo-500 focus:outline-none focus:ring-indigo-500 sm:text-sm"
+              placeholder="••••••••"
             />
           </div>
 

@@ -1,10 +1,10 @@
 import axios from 'axios';
 
 // Toggle this to false to connect directly to your C# .NET Web API
-export const USE_MOCK = true;
+export const USE_MOCK = false;
 
 // The base API URL, loaded from env variables
-const BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api';
+const BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5180/api';
 
 const apiClient = axios.create({
   baseURL: BASE_URL,
@@ -40,7 +40,10 @@ apiClient.interceptors.response.use(
         window.location.href = '/auth/login';
       }
     }
-    return Promise.reject(error);
+    // Trích xuất thông điệp lỗi chi tiết từ API Backend
+    const backendMessage = error.response?.data?.errorMessage || error.response?.data?.message;
+    const finalError = backendMessage ? new Error(backendMessage) : error;
+    return Promise.reject(finalError);
   }
 );
 

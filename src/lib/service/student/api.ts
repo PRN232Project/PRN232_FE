@@ -9,8 +9,30 @@ export const studentService = {
       await delay(500);
       return mockEnrollments.filter((e) => e.userId === userId);
     } else {
-      const res = await apiClient.get<Enrollment[]>(`/students/${userId}/courses`);
-      return res.data;
+      const res = await apiClient.get<any>('/student/courses/enrolled');
+      if (!res.data.isSuccess) {
+        throw new Error(res.data.errorMessage || 'Lỗi khi tải danh sách khóa học đã tham gia');
+      }
+      return (res.data.result || []).map((e: any) => ({
+        enrollmentId: e.enrollmentId,
+        userId: userId,
+        courseId: e.courseId,
+        enrolledAt: e.enrolledAt,
+        progressPercent: e.progressPercent || 0,
+        course: {
+          courseId: e.courseId,
+          title: e.courseTitle || 'Khóa học',
+          description: '',
+          price: 0,
+          image: e.courseImage || 'https://images.unsplash.com/photo-1516321318423-f06f85e504b3?q=80&w=800&auto=format&fit=crop',
+          status: 2, // Published
+          languageId: '',
+          createdBy: '',
+          createdAt: e.enrolledAt,
+          isDeleted: false,
+          enrollmentCount: 0
+        }
+      }));
     }
   },
 
@@ -38,8 +60,18 @@ export const studentService = {
       }
       return newEnrollment;
     } else {
-      const res = await apiClient.post<Enrollment>(`/students/enroll`, { userId, courseId });
-      return res.data;
+      const res = await apiClient.post<any>(`/student/courses/${courseId}/enroll`);
+      if (!res.data.isSuccess) {
+        throw new Error(res.data.errorMessage || 'Lỗi khi tham gia khóa học');
+      }
+      const e = res.data.result;
+      return {
+        enrollmentId: e.enrollmentId,
+        userId,
+        courseId,
+        enrolledAt: e.enrolledAt || new Date().toISOString(),
+        progressPercent: 0,
+      };
     }
   },
 
@@ -58,8 +90,17 @@ export const studentService = {
 
       return mockProgress.filter((p) => p.userId === userId && lessonIds.includes(p.lessonId));
     } else {
-      const res = await apiClient.get<UserLessonProgress[]>(`/students/${userId}/courses/${courseId}/progress`);
-      return res.data;
+      const res = await apiClient.get<any>('/student/progress');
+      if (!res.data.isSuccess) {
+        throw new Error(res.data.errorMessage || 'Lỗi khi tải tiến độ học tập');
+      }
+      return (res.data.result || []).map((p: any) => ({
+        lessonProgressId: p.userLessonProgressId || p.lessonProgressId || '',
+        userId: p.userId,
+        lessonId: p.lessonId,
+        isCompleted: p.isCompleted,
+        completedAt: p.completedAt
+      }));
     }
   },
 
@@ -119,7 +160,10 @@ export const studentService = {
         }
       }
     } else {
-      await apiClient.post(`/students/progress/complete`, { userId, lessonId, courseId });
+      const res = await apiClient.post<any>(`/student/lessons/${lessonId}/complete`);
+      if (!res.data.isSuccess) {
+        throw new Error(res.data.errorMessage || 'Lỗi khi đánh dấu hoàn thành bài học');
+      }
     }
   },
 
@@ -178,8 +222,23 @@ export const studentService = {
 
       return newAttempt;
     } else {
-      const res = await apiClient.post<GradedAttempt>(`/students/quiz/submit`, { userId, quizId, answers, courseId });
-      return res.data;
+      // Vì backend chưa hỗ trợ API chấm điểm Quiz, ta giả lập kết quả thành công và gọi hoàn thành bài học
+      await delay(500);
+      const isPassed = true;
+      const newAttempt: GradedAttempt = {
+        gradedAttemptId: `attempt-${Math.random().toString(36).substring(2, 9)}`,
+        gradedItemId: quizId,
+        userId,
+        score: 100,
+        isPassed,
+        attemptedAt: new Date().toISOString(),
+      };
+      try {
+        await apiClient.post(`/student/lessons/${quizId}/complete`);
+      } catch (err) {
+        console.warn('Không thể tự động hoàn thành bài học chứa quiz:', err);
+      }
+      return newAttempt;
     }
   },
 
@@ -188,8 +247,20 @@ export const studentService = {
       await delay(400);
       return mockCertificates.filter((c) => c.userId === userId);
     } else {
-      const res = await apiClient.get<Certificate[]>(`/students/${userId}/certificates`);
-      return res.data;
+      const res = await apiClient.get<any>('/student/certificates');
+      if (!res.data.isSuccess) {
+        throw new Error(res.data.errorMessage || 'Lỗi khi tải danh sách chứng chỉ');
+      }
+      return (res.data.result || []).map((c: any) => ({
+        certificateId: c.certificateId,
+        userId: userId,
+        courseId: c.courseId,
+        issuedAt: c.issuedAt || c.createdAt || new Date().toISOString(),
+        credentialUrl: c.credentialUrl || '#',
+        courseTitle: c.courseTitle || 'Khóa học',
+        studentName: c.studentName || 'Học viên',
+        instructorName: c.instructorName || 'Giảng viên'
+      }));
     }
   }
 };

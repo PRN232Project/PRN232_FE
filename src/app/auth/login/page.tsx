@@ -7,7 +7,7 @@ import { GraduationCap, Loader2, ArrowRight } from 'lucide-react';
 export default function LoginPage() {
   const { login, loading } = useAuth();
   const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('password123');
+  const [password, setPassword] = useState('');
   const [error, setError] = useState<string | null>(null);
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -15,16 +15,6 @@ export default function LoginPage() {
     setError(null);
     try {
       await login(email, password);
-    } catch (err: any) {
-      setError(err.message || 'Đã có lỗi xảy ra');
-    }
-  };
-
-  const handleQuickLogin = async (demoEmail: string) => {
-    setError(null);
-    setEmail(demoEmail);
-    try {
-      await login(demoEmail, 'password123');
     } catch (err: any) {
       setError(err.message || 'Đã có lỗi xảy ra');
     }
@@ -98,46 +88,6 @@ export default function LoginPage() {
           </button>
         </div>
       </form>
-
-      <div className="mt-8 pt-6 border-t border-zinc-200">
-        <h3 className="text-xs font-semibold text-zinc-500 uppercase tracking-wider text-center">
-          Tài khoản dùng thử nhanh (Quick Login)
-        </h3>
-        <div className="mt-4 space-y-2">
-          <button
-            onClick={() => handleQuickLogin('student@olp.com')}
-            className="flex w-full items-center justify-between rounded-lg border border-zinc-200 bg-zinc-50 hover:bg-zinc-100/80 p-3 text-sm text-zinc-700 transition-all text-left cursor-pointer"
-          >
-            <div>
-              <span className="font-semibold block">Học viên (Student)</span>
-              <span className="text-xs text-zinc-500">student@olp.com</span>
-            </div>
-            <ArrowRight className="h-4 w-4 text-zinc-400" />
-          </button>
-
-          <button
-            onClick={() => handleQuickLogin('teacher@olp.com')}
-            className="flex w-full items-center justify-between rounded-lg border border-zinc-200 bg-zinc-50 hover:bg-zinc-100/80 p-3 text-sm text-zinc-700 transition-all text-left cursor-pointer"
-          >
-            <div>
-              <span className="font-semibold block">Giảng viên (Instructor)</span>
-              <span className="text-xs text-zinc-500">teacher@olp.com</span>
-            </div>
-            <ArrowRight className="h-4 w-4 text-zinc-400" />
-          </button>
-
-          <button
-            onClick={() => handleQuickLogin('admin@olp.com')}
-            className="flex w-full items-center justify-between rounded-lg border border-zinc-200 bg-zinc-50 hover:bg-zinc-100/80 p-3 text-sm text-zinc-700 transition-all text-left cursor-pointer"
-          >
-            <div>
-              <span className="font-semibold block">Quản trị viên (Admin)</span>
-              <span className="text-xs text-zinc-505">admin@olp.com</span>
-            </div>
-            <ArrowRight className="h-4 w-4 text-zinc-400" />
-          </button>
-        </div>
-      </div>
       
       <div className="mt-4 text-center">
         <a href="/auth/register" className="text-xs text-blue-600 hover:underline">Chưa có tài khoản? Đăng ký ngay</a>

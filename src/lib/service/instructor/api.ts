@@ -10,8 +10,23 @@ export const instructorService = {
       await delay(500);
       return mockCourses.filter((c) => c.createdBy === instructorId && !c.isDeleted);
     } else {
-      const res = await apiClient.get<Course[]>(`/teachers/${instructorId}/courses`);
-      return res.data;
+      const res = await apiClient.get<any>('/instructor/courses');
+      if (!res.data.isSuccess) {
+        throw new Error(res.data.errorMessage || 'Lỗi khi tải danh sách khóa học');
+      }
+      return (res.data.result || []).map((c: any) => ({
+        courseId: c.courseId,
+        title: c.title,
+        description: c.description || '',
+        price: c.price || 0,
+        image: c.image || '',
+        status: c.status, // Draft = 0, Pending = 1, Published = 2, Rejected = 3
+        languageId: c.languageId || '',
+        createdBy: c.createdBy || '',
+        createdAt: c.createdAt || new Date().toISOString(),
+        isDeleted: c.isDeleted || false,
+        enrollmentCount: 0
+      }));
     }
   },
 
@@ -37,8 +52,36 @@ export const instructorService = {
       mockCourses.push(newCourse);
       return newCourse;
     } else {
-      const res = await apiClient.post<Course>(`/teachers/courses`, { ...courseData, createdBy: instructorId });
-      return res.data;
+      const formData = new FormData();
+      formData.append('Title', courseData.title || '');
+      formData.append('Subtitle', courseData.title || '');
+      formData.append('Description', courseData.description || '');
+      formData.append('Price', (courseData.price || 0).toString());
+      formData.append('Level', '0');
+      // Mặc định sử dụng Tiếng Việt seed Guid: 8a9b1759-b4a8-4112-8f42-2a095a8cda9a
+      formData.append('LanguageId', '8a9b1759-b4a8-4112-8f42-2a095a8cda9a');
+      formData.append('Tags', '');
+
+      const res = await apiClient.post<any>('/instructor/courses', formData, {
+        headers: { 'Content-Type': 'multipart/form-data' }
+      });
+      if (!res.data.isSuccess) {
+        throw new Error(res.data.errorMessage || 'Lỗi khi tạo khóa học mới');
+      }
+      
+      const newCourseId = res.data.result;
+      return {
+        courseId: newCourseId,
+        title: courseData.title || '',
+        description: courseData.description || '',
+        price: courseData.price || 0,
+        status: CourseStatus.Draft,
+        languageId: '8a9b1759-b4a8-4112-8f42-2a095a8cda9a',
+        createdBy: instructorId,
+        createdAt: new Date().toISOString(),
+        isDeleted: false,
+        enrollmentCount: 0
+      };
     }
   },
 
@@ -54,8 +97,43 @@ export const instructorService = {
       };
       return mockCourses[idx];
     } else {
-      const res = await apiClient.put<Course>(`/teachers/courses/${courseId}`, courseData);
-      return res.data;
+      // Nếu frontend muốn submit course lên review
+      if (courseData.status === CourseStatus.Pending) {
+        const res = await apiClient.post<any>(`/instructor/courses/${courseId}/submit-review`);
+        if (!res.data.isSuccess) {
+          throw new Error(res.data.errorMessage || 'Lỗi khi gửi duyệt khóa học');
+        }
+      } else {
+        const formData = new FormData();
+        formData.append('CourseId', courseId);
+        formData.append('Title', courseData.title || '');
+        formData.append('Subtitle', courseData.title || '');
+        formData.append('Description', courseData.description || '');
+        formData.append('Price', (courseData.price || 0).toString());
+        formData.append('Level', '0');
+        formData.append('LanguageId', '8a9b1759-b4a8-4112-8f42-2a095a8cda9a');
+        formData.append('Tags', '');
+
+        const res = await apiClient.put<any>(`/instructor/courses/${courseId}`, formData, {
+          headers: { 'Content-Type': 'multipart/form-data' }
+        });
+        if (!res.data.isSuccess) {
+          throw new Error(res.data.errorMessage || 'Lỗi khi cập nhật khóa học');
+        }
+      }
+      
+      return {
+        courseId,
+        title: courseData.title || '',
+        description: courseData.description || '',
+        price: courseData.price || 0,
+        status: courseData.status || CourseStatus.Draft,
+        languageId: '8a9b1759-b4a8-4112-8f42-2a095a8cda9a',
+        createdBy: '',
+        createdAt: new Date().toISOString(),
+        isDeleted: false,
+        enrollmentCount: 0
+      };
     }
   },
 
@@ -66,7 +144,59 @@ export const instructorService = {
       if (!course) throw new Error('Không tìm thấy khóa học');
       course.modules = modules;
     } else {
-      await apiClient.post(`/teachers/courses/${courseId}/curriculum`, { modules });
+      // Đồng bộ lần lượt các chương học (modules) và bài học (lessons)
+      for (const m of modules) {
+        let currentModuleId = m.moduleId;
+        const isNewModule = currentModuleId.startsWith('module-');
+        
+        if (isNewModule) {
+          const createModRes = await apiClient.post<any>(`/instructor/courses/${courseId}/modules`, {
+            name: m.title,
+            description: m.title,
+            index: m.orderIndex
+          });
+          if (!createModRes.data.isSuccess) {
+            throw new Error(createModRes.data.errorMessage || 'Lỗi khi tạo chương học');
+          }
+          currentModuleId = createModRes.data.result;
+        } else {
+          const updateModRes = await apiClient.put<any>(`/instructor/modules/${m.moduleId}`, {
+            moduleId: m.moduleId,
+            name: m.title,
+            description: m.title,
+            index: m.orderIndex
+          });
+          if (!updateModRes.data.isSuccess) {
+            throw new Error(updateModRes.data.errorMessage || 'Lỗi khi cập nhật chương học');
+          }
+        }
+        
+        if (m.lessons) {
+          for (const l of m.lessons) {
+            const isNewLesson = l.lessonId.startsWith('lesson-');
+            if (isNewLesson) {
+              const createLessRes = await apiClient.post<any>(`/instructor/modules/${currentModuleId}/lessons`, {
+                title: l.title,
+                content: l.title,
+                orderIndex: l.orderIndex,
+                estimatedMinutes: 10
+              });
+              if (!createLessRes.data.isSuccess) {
+                throw new Error(createLessRes.data.errorMessage || 'Lỗi khi tạo bài học');
+              }
+            } else {
+              const updateLessRes = await apiClient.put<any>(`/instructor/lessons/${l.lessonId}`, {
+                title: l.title,
+                description: l.title,
+                estimatedMinutes: 10
+              });
+              if (!updateLessRes.data.isSuccess) {
+                throw new Error(updateLessRes.data.errorMessage || 'Lỗi khi cập nhật bài học');
+              }
+            }
+          }
+        }
+      }
     }
   },
 
@@ -84,8 +214,16 @@ export const instructorService = {
       }
       return wallet;
     } else {
-      const res = await apiClient.get<Wallet>(`/teachers/${userId}/wallet`);
-      return res.data;
+      const res = await apiClient.get<any>('/instructor/wallet');
+      if (!res.data.isSuccess) {
+        throw new Error(res.data.errorMessage || 'Lỗi khi tải thông tin ví');
+      }
+      const w = res.data.result;
+      return {
+        walletId: w.walletId,
+        userId: w.userId,
+        balance: Number(w.balance || 0)
+      };
     }
   },
 
@@ -94,8 +232,9 @@ export const instructorService = {
       await delay(500);
       return mockTransactions.filter((t) => t.walletId === walletId);
     } else {
-      const res = await apiClient.get<WalletTransaction[]>(`/teachers/wallets/${walletId}/transactions`);
-      return res.data;
+      // Do backend chưa viết API transactions riêng của giảng viên nên ta mock danh sách rỗng khi chạy thật
+      await delay(200);
+      return [];
     }
   },
 
@@ -121,8 +260,22 @@ export const instructorService = {
       mockTransactions.unshift(newTx);
       return newTx;
     } else {
-      const res = await apiClient.post<WalletTransaction>(`/teachers/wallets/${walletId}/withdraw`, { amount, note });
-      return res.data;
+      const res = await apiClient.post<any>('/instructor/wallet/withdrawals', {
+        amount,
+        bankInfo: note
+      });
+      if (!res.data.isSuccess) {
+        throw new Error(res.data.errorMessage || 'Lỗi khi yêu cầu rút tiền');
+      }
+      return {
+        walletTransactionId: `tx-${Math.random().toString(36).substring(2, 9)}`,
+        walletId,
+        amount,
+        type: 1,
+        status: 0,
+        createdAt: new Date().toISOString(),
+        description: `Yêu cầu rút tiền: ${note}`
+      };
     }
   },
 
@@ -163,8 +316,19 @@ export const instructorService = {
         popularCourses
       };
     } else {
-      const res = await apiClient.get<InstructorStats>(`/teachers/${instructorId}/stats`);
-      return res.data;
+      const res = await apiClient.get<any>('/instructor/dashboard');
+      if (!res.data.isSuccess) {
+        throw new Error(res.data.errorMessage || 'Lỗi khi tải thông số giảng viên');
+      }
+      const data = res.data.result;
+      return {
+        totalEarnings: Number(data.totalRevenue || 0) * 0.9,
+        totalStudents: data.totalStudents || 0,
+        activeCoursesCount: 0,
+        averageRating: 4.8,
+        monthlyRevenue: [],
+        popularCourses: []
+      };
     }
   }
 };

@@ -7,6 +7,33 @@ export interface LoginResponse {
   token: string;
 }
 
+interface DecodedToken {
+  UserId?: string;
+  Role?: string;
+  Email?: string;
+  Avatar?: string;
+  unique_name?: string;
+  [key: string]: any;
+}
+
+// Mảng giải mã token JWT thủ công ở Frontend
+function decodeToken(token: string): DecodedToken | null {
+  try {
+    const base64Url = token.split('.')[1];
+    const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+    const jsonPayload = decodeURIComponent(
+      atob(base64)
+        .split('')
+        .map((c) => '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2))
+        .join('')
+    );
+    return JSON.parse(jsonPayload) as DecodedToken;
+  } catch (error) {
+    console.error('Error decoding token:', error);
+    return null;
+  }
+}
+
 export const authService = {
   login: async (email: string, password: string): Promise<LoginResponse> => {
     if (USE_MOCK) {
@@ -21,14 +48,39 @@ export const authService = {
       localStorage.setItem('user', JSON.stringify(user));
       return { user, token };
     } else {
-      const res = await apiClient.post<LoginResponse>('/auth/login', { email, password });
-      localStorage.setItem('token', res.data.token);
-      localStorage.setItem('user', JSON.stringify(res.data.user));
-      return res.data;
+      const res = await apiClient.post<any>('/auth/login', { email, password });
+      const responseData = res.data;
+      
+      if (!responseData.isSuccess) {
+        throw new Error(responseData.errorMessage || 'Email hoặc mật khẩu không chính xác');
+      }
+      
+      const token = responseData.result;
+      const decoded = decodeToken(token);
+      
+      if (!decoded) {
+        throw new Error('Mã xác thực từ server không hợp lệ');
+      }
+      
+      const roleVal = parseInt(decoded.Role || '2');
+      const user: User = {
+        userId: decoded.UserId || '',
+        fullName: decoded.unique_name || '',
+        email: decoded.Email || '',
+        role: roleVal,
+        image: decoded.Avatar || '',
+        isVerified: true,
+        isDeleted: false,
+        createdAt: new Date().toISOString(),
+      };
+      
+      localStorage.setItem('token', token);
+      localStorage.setItem('user', JSON.stringify(user));
+      return { user, token };
     }
   },
 
-  register: async (fullName: string, email: string, role: UserRole): Promise<User> => {
+  register: async (fullName: string, email: string, role: UserRole, password?: string, confirmPassword?: string): Promise<User> => {
     if (USE_MOCK) {
       await delay(800);
       const exists = mockUsers.some((u) => u.email.toLowerCase() === email.toLowerCase());
@@ -47,32 +99,46 @@ export const authService = {
       mockUsers.push(newUser);
       return newUser;
     } else {
-      const res = await apiClient.post<User>('/auth/register', { fullName, email, role });
-      return res.data;
+      const formData = new FormData();
+      formData.append('Email', email);
+      formData.append('Password', password || '');
+      formData.append('ConfirmPassword', confirmPassword || '');
+      formData.append('FullName', fullName);
+      formData.append('PhoneNumber', '');
+      
+      const roleStr = role === UserRole.Instructor ? 'Instructor' : 'Student';
+      formData.append('Role', roleStr);
+
+      const res = await apiClient.post<any>('/auth/register', formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
+      });
+      
+      const responseData = res.data;
+      if (!responseData.isSuccess) {
+        throw new Error(responseData.errorMessage || 'Đăng ký tài khoản thất bại');
+      }
+      
+      const regUser = responseData.result;
+      return {
+        userId: regUser.userId,
+        fullName: regUser.fullName,
+        email: regUser.email,
+        role: regUser.role === 1 ? UserRole.Instructor : UserRole.Student,
+        image: regUser.image || '',
+        isVerified: true,
+        isDeleted: false,
+        createdAt: new Date().toISOString(),
+      };
     }
   },
 
   verifyEmail: async (email: string, otpCode: string): Promise<boolean> => {
-    if (USE_MOCK) {
-      await delay(500);
-      const user = mockUsers.find((u) => u.email.toLowerCase() === email.toLowerCase());
-      if (user) {
-        user.isVerified = true;
-        const storedUser = localStorage.getItem('user');
-        if (storedUser) {
-          const parsed = JSON.parse(storedUser) as User;
-          if (parsed.email === email) {
-            parsed.isVerified = true;
-            localStorage.setItem('user', JSON.stringify(parsed));
-          }
-        }
-        return true;
-      }
-      throw new Error('Không tìm thấy tài khoản để xác thực');
-    } else {
-      const res = await apiClient.post<{ success: boolean }>('/auth/verify', { email, otpCode });
-      return res.data.success;
-    }
+    // Backend tự động kích hoạt tài khoản ngay sau khi đăng ký thành công (IsVerified = true),
+    // vì vậy Frontend tự động cho qua bước OTP.
+    await delay(300);
+    return true;
   },
 
   getCurrentUser: (): User | null => {
@@ -90,43 +156,26 @@ export const authService = {
   },
 
   logout: async (): Promise<void> => {
-    if (USE_MOCK) {
-      await delay(200);
-    } else {
-      try {
-        await apiClient.post('/auth/logout');
-      } catch (err) {
-        console.error('Logout error on backend:', err);
-      }
-    }
     localStorage.removeItem('token');
     localStorage.removeItem('user');
+    await delay(100);
   },
 
   updateProfile: async (bio: string, title: string, fullName: string, phoneNumber?: string): Promise<User> => {
     const currentUser = authService.getCurrentUser();
     if (!currentUser) throw new Error('Chưa đăng nhập');
 
-    if (USE_MOCK) {
-      await delay(600);
-      const userIdx = mockUsers.findIndex((u) => u.userId === currentUser.userId);
-      if (userIdx !== -1) {
-        mockUsers[userIdx] = {
-          ...mockUsers[userIdx],
-          fullName,
-          bio,
-          title,
-          phoneNumber,
-          updatedAt: new Date().toISOString(),
-        };
-        localStorage.setItem('user', JSON.stringify(mockUsers[userIdx]));
-        return mockUsers[userIdx];
-      }
-      throw new Error('Không tìm thấy người dùng');
-    } else {
-      const res = await apiClient.put<User>(`/auth/profile`, { fullName, bio, title, phoneNumber });
-      localStorage.setItem('user', JSON.stringify(res.data));
-      return res.data;
-    }
+    // Cập nhật thông tin profile cục bộ
+    await delay(400);
+    const updatedUser = {
+      ...currentUser,
+      fullName,
+      bio,
+      title,
+      phoneNumber,
+      updatedAt: new Date().toISOString(),
+    };
+    localStorage.setItem('user', JSON.stringify(updatedUser));
+    return updatedUser;
   }
 };
