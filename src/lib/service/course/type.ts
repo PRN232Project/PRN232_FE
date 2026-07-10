@@ -60,6 +60,10 @@ export interface LessonItem {
   orderIndex: number;
   gradedItem?: GradedItem;
   lessonResources?: LessonResource[];
+  content?: string;
+  videoUrl?: string;
+  videoFile?: File;
+  videoSourceType?: number;
 }
 
 export interface LessonResource {

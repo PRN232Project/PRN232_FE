@@ -87,6 +87,7 @@ export default function CurriculumBuilderPage() {
   ]);
   const [isGeneratingQuiz, setIsGeneratingQuiz] = useState(false);
   const [pdfFileName, setPdfFileName] = useState('');
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
@@ -209,6 +210,7 @@ export default function CurriculumBuilderPage() {
     setVideoUrl('');
     setReadingContent('');
     setPdfFileName('');
+    setSelectedFile(null);
     setQuizQuestions([
       {
         id: 'q-init-1',
@@ -223,23 +225,14 @@ export default function CurriculumBuilderPage() {
     setSheetOpen(true);
   };
 
-  // Video Upload Simulation
-  const handleVideoUploadSimulation = () => {
+  // Video / Audio / Document file selection handler
+  const handleFileChangeForResource = () => {
     const file = videoInputRef.current?.files?.[0];
     if (!file) return;
 
-    setIsUploadingVideo(true);
+    setSelectedFile(file);
     setMaterialTitle(file.name.replace(/\.[^/.]+$/, ''));
-    let progress = 0;
-    const interval = setInterval(() => {
-      progress += 10;
-      setUploadProgress(progress);
-      if (progress >= 100) {
-        clearInterval(interval);
-        setIsUploadingVideo(false);
-        setVideoUrl('https://www.youtube.com/embed/dQw4w9WgXcQ'); // Mock video URL
-      }
-    }, 200);
+    setVideoUrl(URL.createObjectURL(file));
   };
 
   // AI Quiz Generator Simulation
@@ -249,50 +242,56 @@ export default function CurriculumBuilderPage() {
     setPdfFileName(file.name);
   };
 
-  const handleGenerateAIQuiz = () => {
-    if (!pdfFileName) {
+  const handleGenerateAIQuiz = async () => {
+    const file = fileInputRef.current?.files?.[0];
+    if (!file) {
       alert('Vui lòng chọn một tệp PDF trước!');
       return;
     }
     setIsGeneratingQuiz(true);
-    setTimeout(() => {
-      const generatedQuestions = [
-        {
-          id: `q-ai-1`,
-          questionText: "Trong lập trình hướng đối tượng C#, tính Đóng gói (Encapsulation) được triển khai thế nào?",
+    try {
+      const formData = new FormData();
+      formData.append('file', file);
+      formData.append('courseTitle', course?.title || 'Khóa học');
+      formData.append('numQuestions', '5');
+
+      const response = await fetch('/api/quiz/generate', {
+        method: 'POST',
+        body: formData,
+      });
+
+      const resData = await response.json();
+      if (!response.ok || !resData.isSuccess) {
+        throw new Error(resData.errorMessage || 'Lỗi khi sinh câu hỏi trắc nghiệm');
+      }
+
+      const letters = ['A', 'B', 'C', 'D'];
+      const generatedQuestions = resData.result.map((q: any, index: number) => {
+        const correctLetter = q.answer.trim().toUpperCase();
+        return {
+          id: `q-ai-${index}-${Math.random().toString(36).substring(2, 5)}`,
+          questionText: q.question,
           points: 10,
-          answerOptions: [
-            { answerOptionId: 'ao-1-1', optionText: 'Sử dụng các thuộc tính private kết hợp public Get/Set properties.', isCorrect: true },
-            { answerOptionId: 'ao-1-2', optionText: 'Sử dụng từ khóa override và virtual kế thừa.', isCorrect: false },
-            { answerOptionId: 'ao-1-3', optionText: 'Khai báo lớp static không cho khởi tạo.', isCorrect: false },
-            { answerOptionId: 'ao-1-4', optionText: 'Mã hóa nhị phân dữ liệu khi gửi qua mạng.', isCorrect: false }
-          ]
-        },
-        {
-          id: `q-ai-2`,
-          questionText: "Lợi ích lớn nhất của việc thiết kế RESTful API không lưu trạng thái (Stateless) là gì?",
-          points: 10,
-          answerOptions: [
-            { answerOptionId: 'ao-2-1', optionText: 'Tăng tốc kết nối cơ sở dữ liệu local.', isCorrect: false },
-            { answerOptionId: 'ao-2-2', optionText: 'Giúp hệ thống dễ mở rộng theo chiều ngang (High Scalability) vì các server không cần đồng bộ session.', isCorrect: true },
-            { answerOptionId: 'ao-2-3', optionText: 'Tự động mã hóa tất cả các JSON payload.', isCorrect: false }
-          ]
-        },
-        {
-          id: `q-ai-3`,
-          questionText: "Trong EF Core, phương thức AsNoTracking() được sử dụng nhằm mục đích gì?",
-          points: 10,
-          answerOptions: [
-            { answerOptionId: 'ao-3-1', optionText: 'Để chạy migration cập nhật cấu trúc database.', isCorrect: false },
-            { answerOptionId: 'ao-3-2', optionText: 'Để tắt bộ theo dõi thay đổi thực thể (Change Tracker), tối ưu bộ nhớ đối với các truy vấn chỉ đọc (Read-only).', isCorrect: true },
-            { answerOptionId: 'ao-3-3', optionText: 'Để thực hiện nối bảng Left Join giữa hai Collection.', isCorrect: false }
-          ]
-        }
-      ];
+          answerOptions: q.options.map((opt: string, optIdx: number) => {
+            const letter = letters[optIdx] || String.fromCharCode(65 + optIdx);
+            const isCorrect = correctLetter === letter || correctLetter.startsWith(letter);
+            return {
+              answerOptionId: `ao-ai-${index}-${optIdx}-${Math.random().toString(36).substring(2, 5)}`,
+              optionText: opt.replace(/^[A-Z]\.\s*/, ''), // Strip the "A." prefix
+              isCorrect: isCorrect
+            };
+          })
+        };
+      });
+
       setQuizQuestions(generatedQuestions);
       setMaterialTitle(`Bài ôn tập nhanh: ${pdfFileName.replace(/\.[^/.]+$/, '')}`);
+    } catch (err: any) {
+      console.error(err);
+      alert(err.message || 'Lỗi khi tự động tạo câu hỏi trắc nghiệm.');
+    } finally {
       setIsGeneratingQuiz(false);
-    }, 1500);
+    }
   };
 
   // Quiz Form Management
@@ -358,7 +357,10 @@ export default function CurriculumBuilderPage() {
         title: materialTitle.trim(),
         type: LessonItemType.Video,
         durationMinutes: 15,
-        orderIndex: 0
+        orderIndex: 0,
+        videoSourceType: 2, // 2 = File upload
+        videoFile: selectedFile || undefined,
+        videoUrl: videoUrl
       };
     } else if (selectedType === 'reading') {
       newItem = {
@@ -367,7 +369,8 @@ export default function CurriculumBuilderPage() {
         title: materialTitle.trim(),
         type: LessonItemType.Article,
         durationMinutes: 10,
-        orderIndex: 0
+        orderIndex: 0,
+        content: readingContent.trim()
       };
     } else {
       // Quiz
@@ -887,23 +890,23 @@ export default function CurriculumBuilderPage() {
                     </div>
 
                     <div className="space-y-3">
-                      <label className="block text-xs font-bold text-zinc-700 mb-1.5">Tải lên video MP4</label>
+                      <label className="block text-xs font-bold text-zinc-700 mb-1.5">Tải lên tài liệu học liệu (MP4, MP3, PDF, vv.)</label>
                       <div className="border-2 border-dashed border-zinc-300 hover:border-zinc-400 rounded-xl p-8 text-center transition-colors">
                         <Upload className="h-8 w-8 text-zinc-400 mx-auto mb-2" />
                         
                         <div className="flex justify-center">
                           <label className="cursor-pointer bg-white px-3.5 py-2 border border-zinc-300 rounded-lg text-[10px] font-bold text-indigo-650 hover:bg-zinc-50 shadow-sm transition">
-                            <span>Chọn tệp MP4</span>
+                            <span>Chọn tệp học liệu</span>
                             <input
                               type="file"
-                              accept="video/mp4"
+                              accept="video/mp4,video/mpeg,audio/mpeg,audio/mp3,audio/wav,application/pdf"
                               ref={videoInputRef}
-                              onChange={handleVideoUploadSimulation}
+                              onChange={handleFileChangeForResource}
                               className="sr-only"
                             />
                           </label>
                         </div>
-                        <p className="text-[10px] text-zinc-400 font-medium pt-2">Hỗ trợ tệp MP4 lên tới 500MB</p>
+                        <p className="text-[10px] text-zinc-400 font-medium pt-2">Hỗ trợ các tệp lên tới 500MB</p>
                       </div>
 
                       {/* Video upload progress */}
@@ -919,10 +922,10 @@ export default function CurriculumBuilderPage() {
                         </div>
                       )}
 
-                      {!isUploadingVideo && videoUrl && (
+                       {!isUploadingVideo && selectedFile && (
                         <div className="rounded-lg bg-green-50 border border-green-150 p-3.5 flex items-center gap-2.5 text-xs text-green-700 font-medium">
                           <Check className="h-4 w-4 text-green-500" />
-                          Tải video thành công! Sẵn sàng liên kết.
+                          Đã chọn tệp: <span className="font-semibold">{selectedFile.name}</span>
                         </div>
                       )}
                     </div>
@@ -930,10 +933,10 @@ export default function CurriculumBuilderPage() {
                     <div className="pt-6 border-t border-zinc-200">
                       <button
                         type="submit"
-                        disabled={isUploadingVideo || !videoUrl}
+                        disabled={isUploadingVideo || !selectedFile}
                         className="w-full py-3.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-xs font-bold shadow-lg transition-all flex items-center justify-center gap-1.5 disabled:bg-zinc-200 disabled:text-zinc-400 cursor-pointer"
                       >
-                        Lưu học liệu Video
+                        Lưu học liệu tệp tin
                       </button>
                     </div>
                   </form>

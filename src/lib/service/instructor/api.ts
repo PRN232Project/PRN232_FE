@@ -165,7 +165,10 @@ export const instructorService = {
             title: li.title || 'Học liệu',
             type: li.type,
             durationMinutes: li.durationMinutes || 15,
-            orderIndex: li.orderIndex || 0
+            orderIndex: li.orderIndex || 0,
+            content: li.content || '',
+            videoUrl: li.resourceUrl || '',
+            videoSourceType: li.videoSourceType || 1
           }))
         }))
       }));
@@ -239,16 +242,28 @@ export const instructorService = {
               const isNewItem = item.lessonItemId.startsWith('item-');
               if (isNewItem) {
                 if (item.type === 0) { // Video
-                  await apiClient.post<any>(`/instructor/lessons/${currentLessonId}/items/video`, {
-                    title: item.title,
-                    videoSourceType: 1, // YouTube URL
-                    videoUrl: 'https://www.youtube.com/watch?v=dQw4w9WgXcQ', // default placeholder
-                    orderIndex: item.orderIndex || 1
-                  });
+                  if (item.videoSourceType === 2 && item.videoFile) {
+                    const formData = new FormData();
+                    formData.append('Title', item.title);
+                    formData.append('VideoSourceType', '2');
+                    formData.append('VideoFile', item.videoFile);
+                    formData.append('OrderIndex', (item.orderIndex || 1).toString());
+                    
+                    await apiClient.post<any>(`/instructor/lessons/${currentLessonId}/items/video`, formData, {
+                      headers: { 'Content-Type': 'multipart/form-data' }
+                    });
+                  } else {
+                    await apiClient.post<any>(`/instructor/lessons/${currentLessonId}/items/video`, {
+                      title: item.title,
+                      videoSourceType: item.videoSourceType || 1, // YouTube URL
+                      videoUrl: item.videoUrl || 'https://www.youtube.com/watch?v=dQw4w9WgXcQ',
+                      orderIndex: item.orderIndex || 1
+                    });
+                  }
                 } else if (item.type === 1) { // Article / Reading
                   await apiClient.post<any>(`/instructor/lessons/${currentLessonId}/items/reading`, {
                     title: item.title,
-                    content: 'Nội dung bài viết tự học dành cho học viên.',
+                    content: item.content || 'Nội dung bài học tự biên soạn.',
                     orderIndex: item.orderIndex || 1
                   });
                 } else if (item.type === 2 && item.gradedItem) { // Quiz
