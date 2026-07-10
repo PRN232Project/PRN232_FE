@@ -23,10 +23,28 @@ export const courseService = {
       
       return list;
     } else {
-      const res = await apiClient.get<Course[]>('/courses', {
-        params: { search, languageId, maxPrice }
+      const res = await apiClient.get<any>('/courses', {
+        params: { search }
       });
-      return res.data;
+      if (!res.data.isSuccess) {
+        throw new Error(res.data.errorMessage || 'Lỗi khi tải danh sách khóa học');
+      }
+      const data = res.data.result;
+      const courses = data?.courses || [];
+      return courses.map((c: any) => ({
+        courseId: c.courseId,
+        title: c.title,
+        description: c.description || '',
+        price: c.price || 0,
+        image: c.image || 'https://images.unsplash.com/photo-1516321318423-f06f85e504b3?q=80&w=800&auto=format&fit=crop',
+        status: c.status || CourseStatus.Published,
+        languageId: '',
+        createdBy: '',
+        createdAt: new Date().toISOString(),
+        isDeleted: false,
+        enrollmentCount: c.students || 0,
+        instructorName: c.instructorName || 'Giảng viên'
+      }));
     }
   },
 
@@ -39,8 +57,25 @@ export const courseService = {
       }
       return course;
     } else {
-      const res = await apiClient.get<Course>(`/courses/${courseId}`);
-      return res.data;
+      const res = await apiClient.get<any>(`/courses/${courseId}`);
+      if (!res.data.isSuccess) {
+        throw new Error(res.data.errorMessage || 'Lỗi khi tải chi tiết khóa học');
+      }
+      const c = res.data.result;
+      return {
+        courseId: c.courseId,
+        title: c.title,
+        description: c.description || '',
+        price: c.price || 0,
+        image: c.image || 'https://images.unsplash.com/photo-1516321318423-f06f85e504b3?q=80&w=800&auto=format&fit=crop',
+        status: c.status || CourseStatus.Published,
+        languageId: '',
+        createdBy: '',
+        createdAt: new Date().toISOString(),
+        isDeleted: false,
+        enrollmentCount: c.students || 0,
+        instructorName: c.instructorName || 'Giảng viên'
+      };
     }
   }
 };
