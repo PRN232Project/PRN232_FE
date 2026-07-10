@@ -182,7 +182,7 @@ export const instructorService = {
       // Đồng bộ lần lượt các chương học (modules) và bài học (lessons)
       for (const m of modules) {
         let currentModuleId = m.moduleId;
-        const isNewModule = currentModuleId.startsWith('module-');
+        const isNewModule = currentModuleId.startsWith('module-') || currentModuleId.startsWith('mod-mock-');
         
         if (isNewModule) {
           const createModRes = await apiClient.post<any>(`/instructor/courses/${courseId}/modules`, {
