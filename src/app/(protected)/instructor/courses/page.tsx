@@ -1,12 +1,14 @@
 'use client';
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import { useAuth } from '@/context/AuthContext';
+import { useSignalR } from '@/context/SignalRContext';
 import { Course, CourseStatus, instructorService } from '@/lib/service';
 import { Plus, BookOpen, Users, Edit, GraduationCap, AlertCircle, CheckCircle2, FileEdit, Search, ArrowUpDown, Filter } from 'lucide-react';
 
 export default function InstructorCoursesPage() {
   const { user } = useAuth();
+  const { notifHub, notifConnected } = useSignalR();
   const [courses, setCourses] = useState<Course[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -16,20 +18,35 @@ export default function InstructorCoursesPage() {
   const [sortBy, setSortBy] = useState<'title' | 'price' | 'enrollmentCount'>('title');
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc');
 
-  useEffect(() => {
+  const loadCourses = useCallback(async () => {
     if (!user) return;
-    const loadCourses = async () => {
-      try {
-        const data = await instructorService.getInstructorCourses(user.userId);
-        setCourses(data);
-      } catch (err) {
-        console.error(err);
-      } finally {
-        setLoading(false);
-      }
-    };
-    loadCourses();
+    try {
+      const data = await instructorService.getInstructorCourses(user.userId);
+      setCourses(data);
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setLoading(false);
+    }
   }, [user]);
+
+  useEffect(() => {
+    loadCourses();
+  }, [loadCourses]);
+
+  useEffect(() => {
+    if (!notifHub || !notifConnected) return;
+
+    const handleUpdate = () => {
+      loadCourses();
+    };
+
+    notifHub.on('CoursePendingUpdate', handleUpdate);
+
+    return () => {
+      notifHub.off('CoursePendingUpdate', handleUpdate);
+    };
+  }, [notifHub, notifConnected, loadCourses]);
 
   const handleSort = (field: 'title' | 'price' | 'enrollmentCount') => {
     if (sortBy === field) {

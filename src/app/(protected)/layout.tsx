@@ -3,7 +3,6 @@
 import React, { useEffect } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
 import { useAuth } from '@/context/AuthContext';
-import { SignalRProvider } from '@/context/SignalRContext';
 import Navbar from '@/components/shared/Navbar';
 import Footer from '@/components/shared/Footer';
 
@@ -49,19 +48,17 @@ export default function ProtectedLayout({
   // Their nested layout files under /admin/layout.tsx and /instructor/layout.tsx
   // will wrap them inside the DashboardLayout with Sidebar.
   if (user.role === 0 || user.role === 1) {
-    return <SignalRProvider>{children}</SignalRProvider>;
+    return <>{children}</>;
   }
 
   // For Student (role === 2): Render top Navbar and a clean, centered interface
   return (
-    <SignalRProvider>
-      <div className="min-h-screen flex flex-col bg-zinc-50">
-        <Navbar />
-        <main className="flex-1 max-w-7xl w-full mx-auto p-4 sm:p-6 lg:p-8">
-          {children}
-        </main>
-        <Footer />
-      </div>
-    </SignalRProvider>
+    <div className="min-h-screen flex flex-col bg-zinc-50">
+      <Navbar />
+      <main className="flex-1 max-w-7xl w-full mx-auto p-4 sm:p-6 lg:p-8">
+        {children}
+      </main>
+      <Footer />
+    </div>
   );
 }

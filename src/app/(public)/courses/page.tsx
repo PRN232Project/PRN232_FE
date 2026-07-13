@@ -3,11 +3,13 @@
 import React, { useEffect, useState, Suspense } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import { Course, courseService } from '@/lib/service';
+import { useSignalR } from '@/context/SignalRContext';
 import { Search, BookOpen, Clock, Users, SlidersHorizontal, ArrowRight, Star, Sparkles } from 'lucide-react';
 
 function CoursesContent() {
   const searchParams = useSearchParams();
   const router = useRouter();
+  const { notifHub, notifConnected } = useSignalR();
   const [courses, setCourses] = useState<Course[]>([]);
   const [loading, setLoading] = useState(true);
   
@@ -32,6 +34,20 @@ function CoursesContent() {
   useEffect(() => {
     fetchFilteredCourses();
   }, [searchParams]);
+
+  useEffect(() => {
+    if (!notifHub || !notifConnected) return;
+
+    const handleUpdate = () => {
+      fetchFilteredCourses();
+    };
+
+    notifHub.on('CoursePendingUpdate', handleUpdate);
+
+    return () => {
+      notifHub.off('CoursePendingUpdate', handleUpdate);
+    };
+  }, [notifHub, notifConnected]);
 
   const handleFilterSubmit = (e: React.FormEvent) => {
     e.preventDefault();

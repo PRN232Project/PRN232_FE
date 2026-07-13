@@ -1,7 +1,8 @@
 'use client';
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import { adminService, AdminStats } from '@/lib/service';
+import { useSignalR } from '@/context/SignalRContext';
 import { DollarSign, Users, Award, BookOpen, TrendingUp, Star, ArrowRight, ShieldCheck, Landmark } from 'lucide-react';
 import { ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip, CartesianGrid, PieChart, Pie, Cell } from 'recharts';
 
@@ -14,19 +15,38 @@ export default function AdminDashboard() {
     setMounted(true);
   }, []);
 
-  useEffect(() => {
-    const loadStats = async () => {
-      try {
-        const data = await adminService.getStats();
-        setStats(data);
-      } catch (err) {
-        console.error(err);
-      } finally {
-        setLoading(false);
-      }
-    };
-    loadStats();
+  const { notifHub, notifConnected } = useSignalR();
+
+  const loadStats = useCallback(async () => {
+    try {
+      const data = await adminService.getStats();
+      setStats(data);
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setLoading(false);
+    }
   }, []);
+
+  useEffect(() => {
+    loadStats();
+  }, [loadStats]);
+
+  useEffect(() => {
+    if (!notifHub || !notifConnected) return;
+
+    const handleUpdate = () => {
+      loadStats();
+    };
+
+    notifHub.on('WalletBalanceUpdate', handleUpdate);
+    notifHub.on('CoursePendingUpdate', handleUpdate);
+
+    return () => {
+      notifHub.off('WalletBalanceUpdate', handleUpdate);
+      notifHub.off('CoursePendingUpdate', handleUpdate);
+    };
+  }, [notifHub, notifConnected, loadStats]);
 
   if (loading) {
     return (

@@ -1,26 +1,43 @@
 'use client';
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import { Course, courseService } from '@/lib/service';
+import { useSignalR } from '@/context/SignalRContext';
 import { Search, BookOpen, Clock, Users, ArrowRight, Star, Sparkles, ShieldCheck, GraduationCap } from 'lucide-react';
 
 export default function HomePage() {
+  const { notifHub, notifConnected } = useSignalR();
   const [courses, setCourses] = useState<Course[]>([]);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    const fetchCourses = async () => {
-      try {
-        const data = await courseService.getCourses();
-        setCourses(data);
-      } catch (err) {
-        console.error(err);
-      } finally {
-        setLoading(false);
-      }
-    };
-    fetchCourses();
+  const fetchCourses = useCallback(async () => {
+    try {
+      const data = await courseService.getCourses();
+      setCourses(data);
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setLoading(false);
+    }
   }, []);
+
+  useEffect(() => {
+    fetchCourses();
+  }, [fetchCourses]);
+
+  useEffect(() => {
+    if (!notifHub || !notifConnected) return;
+
+    const handleUpdate = () => {
+      fetchCourses();
+    };
+
+    notifHub.on('CoursePendingUpdate', handleUpdate);
+
+    return () => {
+      notifHub.off('CoursePendingUpdate', handleUpdate);
+    };
+  }, [notifHub, notifConnected, fetchCourses]);
 
   const formatPrice = (price: number) => {
     if (price === 0) return 'Miễn phí';

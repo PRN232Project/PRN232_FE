@@ -162,7 +162,9 @@ export default function UnifiedMessagesPage() {
 
   const formatTime = (isoString: string) => {
     if (!isoString) return '';
+    if (isoString.length === 5 && isoString.includes(':')) return isoString;
     const d = new Date(isoString);
+    if (isNaN(d.getTime())) return isoString;
     return d.toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' });
   };
 
@@ -214,13 +216,29 @@ export default function UnifiedMessagesPage() {
                     )}
                   </div>
                   <div className="flex-1 min-w-0">
-                    <div className="flex items-center justify-between">
+                    <div className="flex items-center justify-between mb-0.5">
                       <span className="text-xs font-bold truncate">{c.name}</span>
+                      <span className={`text-[9px] px-1.5 py-0.2 rounded-full font-medium shrink-0 ${
+                        c.role === 0 
+                          ? 'bg-red-50 text-red-700 border border-red-200' 
+                          : c.role === 1 
+                            ? 'bg-indigo-50 text-indigo-700 border border-indigo-200' 
+                            : 'bg-emerald-50 text-emerald-700 border border-emerald-200'
+                      }`}>
+                        {c.roleLabel || (c.role === 0 ? 'Admin' : (c.role === 1 ? 'Giảng viên' : 'Học sinh'))}
+                      </span>
+                    </div>
+                    {c.courses && c.courses.length > 0 && (
+                      <p className="text-[10px] text-blue-600 font-medium truncate mb-1">
+                        Môn: {c.courses.join(', ')}
+                      </p>
+                    )}
+                    <div className="flex items-center justify-between">
+                      <p className="text-[11px] text-zinc-400 truncate flex-1">{c.lastMessage}</p>
                       {c.lastTime && (
-                        <span className="text-[10px] text-zinc-400">{c.lastTime}</span>
+                        <span className="text-[10px] text-zinc-400 ml-2 shrink-0">{formatTime(c.lastTime)}</span>
                       )}
                     </div>
-                    <p className="text-[11px] text-zinc-400 truncate">{c.lastMessage}</p>
                   </div>
                 </button>
               );
@@ -242,14 +260,32 @@ export default function UnifiedMessagesPage() {
                 )}
               </div>
               <div>
-                <h2 className="text-sm font-bold text-zinc-950">{selectedContact.name}</h2>
-                <span className="text-[10px] font-medium">
-                  {onlineUsers.has(selectedContact.id) ? (
-                    <span className="text-emerald-600">● Đang hoạt động</span>
-                  ) : (
-                    <span className="text-zinc-400">Ngoại tuyến</span>
+                <h2 className="text-sm font-bold text-zinc-950 flex items-center gap-2">
+                  {selectedContact.name}
+                  <span className={`text-[9px] px-1.5 py-0.2 rounded-full font-medium ${
+                    selectedContact.role === 0 
+                      ? 'bg-red-50 text-red-700 border border-red-200' 
+                      : selectedContact.role === 1 
+                        ? 'bg-indigo-50 text-indigo-700 border border-indigo-200' 
+                        : 'bg-emerald-50 text-emerald-700 border border-emerald-200'
+                  }`}>
+                    {selectedContact.roleLabel || (selectedContact.role === 0 ? 'Admin' : (selectedContact.role === 1 ? 'Giảng viên' : 'Học sinh'))}
+                  </span>
+                </h2>
+                <div className="flex flex-col gap-0.5 mt-0.5">
+                  {selectedContact.courses && selectedContact.courses.length > 0 && (
+                    <span className="text-[10px] text-blue-600 font-semibold">
+                      Khóa học: {selectedContact.courses.join(', ')}
+                    </span>
                   )}
-                </span>
+                  <span className="text-[10px] font-medium">
+                    {onlineUsers.has(selectedContact.id) ? (
+                      <span className="text-emerald-600">● Đang hoạt động</span>
+                    ) : (
+                      <span className="text-zinc-400">Ngoại tuyến</span>
+                    )}
+                  </span>
+                </div>
               </div>
             </div>
 

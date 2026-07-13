@@ -1,14 +1,17 @@
 'use client';
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import { WalletTransaction, adminService } from '@/lib/service';
+import { useSignalR } from '@/context/SignalRContext';
 import { CreditCard, Landmark, CheckCircle } from 'lucide-react';
 
 export default function AdminPayoutsPage() {
   const [payouts, setPayouts] = useState<WalletTransaction[]>([]);
   const [loading, setLoading] = useState(true);
 
-  const loadPendingPayouts = async () => {
+  const { notifHub, notifConnected } = useSignalR();
+
+  const loadPendingPayouts = useCallback(async () => {
     try {
       const data = await adminService.getPendingPayouts();
       setPayouts(data);
@@ -17,11 +20,25 @@ export default function AdminPayoutsPage() {
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
 
   useEffect(() => {
     loadPendingPayouts();
-  }, []);
+  }, [loadPendingPayouts]);
+
+  useEffect(() => {
+    if (!notifHub || !notifConnected) return;
+
+    const handleUpdate = () => {
+      loadPendingPayouts();
+    };
+
+    notifHub.on('WalletBalanceUpdate', handleUpdate);
+
+    return () => {
+      notifHub.off('WalletBalanceUpdate', handleUpdate);
+    };
+  }, [notifHub, notifConnected, loadPendingPayouts]);
 
   const handleApprove = async (txId: string) => {
     try {

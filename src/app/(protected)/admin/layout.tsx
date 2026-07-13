@@ -17,6 +17,7 @@ export default function AdminLayout({
     if (pathname.includes('/users')) return 'Quản lý Người dùng';
     if (pathname.includes('/courses')) return 'Duyệt Khóa Học';
     if (pathname.includes('/payouts')) return 'Yêu cầu rút tiền';
+    if (pathname.includes('/messages')) return 'Hộp thư Admin';
     return 'Tổng quan Quản trị';
   };
 

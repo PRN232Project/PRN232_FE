@@ -1,7 +1,8 @@
 'use client';
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import { useAuth } from '@/context/AuthContext';
+import { useSignalR } from '@/context/SignalRContext';
 import { Wallet, WalletTransaction, instructorService } from '@/lib/service';
 import { Landmark, ArrowUpRight, ArrowDownLeft, Clock, CheckCircle2, XCircle } from 'lucide-react';
 
@@ -17,7 +18,9 @@ export default function InstructorWallet() {
   const [accountNumber, setAccountNumber] = useState('');
   const [accountName, setAccountName] = useState('');
 
-  const loadWalletData = async () => {
+  const { notifHub, notifConnected } = useSignalR();
+
+  const loadWalletData = useCallback(async () => {
     if (!user) return;
     try {
       const w = await instructorService.getWallet(user.userId);
@@ -29,11 +32,25 @@ export default function InstructorWallet() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [user]);
 
   useEffect(() => {
     loadWalletData();
-  }, [user]);
+  }, [loadWalletData]);
+
+  useEffect(() => {
+    if (!notifHub || !notifConnected) return;
+
+    const handleUpdate = () => {
+      loadWalletData();
+    };
+
+    notifHub.on('WalletBalanceUpdate', handleUpdate);
+
+    return () => {
+      notifHub.off('WalletBalanceUpdate', handleUpdate);
+    };
+  }, [notifHub, notifConnected, loadWalletData]);
 
   const handleWithdraw = async (e: React.FormEvent) => {
     e.preventDefault();

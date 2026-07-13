@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { AuthProvider } from "@/context/AuthContext";
+import { SignalRProvider } from "@/context/SignalRContext";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -27,7 +28,9 @@ export default function RootLayout({
     <html lang="vi" className="h-full">
       <body className={`${geistSans.variable} ${geistMono.variable} min-h-full bg-zinc-50 text-zinc-900 antialiased`}>
         <AuthProvider>
-          {children}
+          <SignalRProvider>
+            {children}
+          </SignalRProvider>
         </AuthProvider>
       </body>
     </html>

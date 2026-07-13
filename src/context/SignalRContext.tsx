@@ -52,6 +52,7 @@ interface SignalRContextType {
   unreadCount: number;
   markNotificationRead: (id: string) => void;
   clearNotifications: () => void;
+  notifHub: signalR.HubConnection | null;
 }
 
 // ─── Context ─────────────────────────────────────────────────────────────────
@@ -248,6 +249,7 @@ export function SignalRProvider({ children }: { children: React.ReactNode }) {
         unreadCount,
         markNotificationRead,
         clearNotifications,
+        notifHub: notifHubRef.current,
       }}
     >
       {children}

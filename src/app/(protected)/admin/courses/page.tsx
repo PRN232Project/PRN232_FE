@@ -2,6 +2,7 @@
 
 import React, { useEffect, useState } from 'react';
 import { Course, adminService } from '@/lib/service';
+import { useSignalR } from '@/context/SignalRContext';
 import { BookOpen, CheckCircle, XCircle, ChevronDown, ChevronUp, User, Search, X, Eye, FileText } from 'lucide-react';
 
 interface CourseModule {
@@ -23,6 +24,7 @@ interface CourseDetail {
 }
 
 export default function AdminCoursesPage() {
+  const { notifHub, notifConnected } = useSignalR();
   const [courses, setCourses] = useState<Course[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
@@ -52,6 +54,20 @@ export default function AdminCoursesPage() {
   useEffect(() => {
     loadPendingCourses();
   }, []);
+
+  useEffect(() => {
+    if (!notifHub || !notifConnected) return;
+
+    const handleUpdate = () => {
+      loadPendingCourses();
+    };
+
+    notifHub.on('CoursePendingUpdate', handleUpdate);
+
+    return () => {
+      notifHub.off('CoursePendingUpdate', handleUpdate);
+    };
+  }, [notifHub, notifConnected]);
 
   const handleApprove = async (courseId: string) => {
     const confirmApprove = window.confirm('Bạn có chắc chắn muốn phê duyệt và xuất bản khóa học này không?');
