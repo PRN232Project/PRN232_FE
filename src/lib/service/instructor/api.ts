@@ -324,9 +324,40 @@ export const instructorService = {
       await delay(500);
       return mockTransactions.filter((t) => t.walletId === walletId);
     } else {
-      // Do backend chưa viết API transactions riêng của giảng viên nên ta mock danh sách rỗng khi chạy thật
-      await delay(200);
-      return [];
+      const res = await apiClient.get<any>('/instructor/wallet');
+      if (!res.data.isSuccess) {
+        throw new Error(res.data.errorMessage || 'Lỗi khi tải danh sách giao dịch');
+      }
+      const w = res.data.result;
+      const txs = w.transactions || [];
+      return txs.map((t: any) => {
+        // Map backend TransactionType (0: Earning, 1: Withdrawal) to frontend TransactionType (2: Earnings, 1: Withdrawal)
+        const isEarning = t.transactionType === 0;
+        const type = isEarning ? 2 : 1; 
+
+        // Map status based on description
+        let status = 1; // Completed by default
+        if (!isEarning) {
+          if (t.description && t.description.includes('(Pending)')) {
+            status = 0; // Pending
+          } else if (t.description && t.description.includes('(Approved)')) {
+            status = 1; // Completed
+          }
+        }
+
+        // FE expects positive amount to display it correctly
+        const amount = Math.abs(Number(t.amount || 0));
+
+        return {
+          walletTransactionId: t.transactionId,
+          walletId: walletId,
+          amount: amount,
+          type: type,
+          status: status,
+          createdAt: t.createdAt,
+          description: t.description
+        };
+      });
     }
   },
 

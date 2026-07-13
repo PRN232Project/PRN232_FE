@@ -222,13 +222,13 @@ export const adminService = {
       }
       // Map PendingPayoutResponse to WalletTransaction format
       return (res.data.result || []).map((w: any) => ({
-        walletTransactionId: w.walletId, // Map transaction ID to wallet ID to match backend ApprovePayout parameter
+        walletTransactionId: w.transactionId,
         walletId: w.walletId,
-        amount: w.balance,
+        amount: w.amount,
         type: 1, // Withdrawal
         status: 0, // Pending
         createdAt: w.requestedAt || new Date().toISOString(),
-        description: `Yêu cầu rút tiền từ giảng viên: ${w.instructorName} (${w.instructorEmail})`
+        description: `Giảng viên: ${w.instructorName} (${w.instructorEmail}) - Ngân hàng: ${w.bankInfo}`
       }));
     }
   },
