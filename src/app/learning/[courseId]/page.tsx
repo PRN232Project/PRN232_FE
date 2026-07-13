@@ -102,7 +102,8 @@ export default function LearningPage() {
         user.userId,
         selectedItem.gradedItem.gradedItemId,
         answers,
-        course.courseId
+        course.courseId,
+        selectedLessonId
       );
       setQuizAttempt(attempt);
 

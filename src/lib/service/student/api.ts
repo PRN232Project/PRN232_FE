@@ -103,17 +103,31 @@ export const studentService = {
 
       return mockProgress.filter((p) => p.userId === userId && lessonIds.includes(p.lessonId));
     } else {
+      const courseRes = await apiClient.get<any>(`/student/courses/${courseId}/learning`);
+      if (!courseRes.data.isSuccess) {
+        throw new Error(courseRes.data.errorMessage || 'Lỗi khi tải thông tin khóa học');
+      }
+      const courseData = courseRes.data.result;
+      const lessonIds: string[] = [];
+      (courseData.modules || []).forEach((m: any) => {
+        (m.lessons || []).forEach((l: any) => {
+          lessonIds.push(l.lessonId);
+        });
+      });
+
       const res = await apiClient.get<any>('/student/progress');
       if (!res.data.isSuccess) {
         throw new Error(res.data.errorMessage || 'Lỗi khi tải tiến độ học tập');
       }
-      return (res.data.result || []).map((p: any) => ({
-        lessonProgressId: p.userLessonProgressId || p.lessonProgressId || '',
-        userId: p.userId,
-        lessonId: p.lessonId,
-        isCompleted: p.isCompleted,
-        completedAt: p.completedAt
-      }));
+      return (res.data.result || [])
+        .filter((p: any) => lessonIds.includes(p.lessonId))
+        .map((p: any) => ({
+          lessonProgressId: p.userLessonProgressId || p.lessonProgressId || '',
+          userId: p.userId,
+          lessonId: p.lessonId,
+          isCompleted: p.isCompleted,
+          completedAt: p.completedAt
+        }));
     }
   },
 
@@ -184,7 +198,8 @@ export const studentService = {
     userId: string, 
     quizId: string, 
     answers: Record<string, string>, 
-    courseId: string
+    courseId: string,
+    lessonId?: string
   ): Promise<GradedAttempt> => {
     if (USE_MOCK) {
       await delay(800);
@@ -247,7 +262,7 @@ export const studentService = {
         attemptedAt: new Date().toISOString(),
       };
       try {
-        await apiClient.post(`/student/lessons/${quizId}/complete`);
+        await apiClient.post(`/student/lessons/${lessonId || quizId}/complete`);
       } catch (err) {
         console.warn('Không thể tự động hoàn thành bài học chứa quiz:', err);
       }
