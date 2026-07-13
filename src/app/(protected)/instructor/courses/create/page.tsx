@@ -14,7 +14,7 @@ export default function CreateCoursePage() {
   const [description, setDescription] = useState('');
   const [price, setPrice] = useState(0);
   const [languageId, setLanguageId] = useState('lang-vi');
-  const [image, setImage] = useState('');
+  const [imageFile, setImageFile] = useState<File | null>(null);
   const [loading, setLoading] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -27,7 +27,7 @@ export default function CreateCoursePage() {
         description,
         price,
         languageId,
-        image: image || undefined
+        imageFile: imageFile || undefined
       });
       router.push('/instructor/courses');
     } catch (err: any) {
@@ -114,16 +114,25 @@ export default function CreateCoursePage() {
 
         <div>
           <label className="block text-sm font-semibold text-zinc-700 mb-1.5">
-            Ảnh bìa khóa học (URL)
+            Ảnh bìa khóa học
           </label>
           <input
-            type="url"
-            value={image}
-            onChange={(e) => setImage(e.target.value)}
-            placeholder="Link ảnh bìa từ Unsplash..."
-            className="block w-full rounded-lg border border-zinc-300 px-3.5 py-2 text-sm text-zinc-900 focus:border-indigo-500 focus:outline-none"
+            type="file"
+            accept="image/*"
+            onChange={(e) => {
+              if (e.target.files && e.target.files[0]) {
+                setImageFile(e.target.files[0]);
+              }
+            }}
+            className="block w-full text-xs text-zinc-500
+              file:mr-4 file:py-2 file:px-4
+              file:rounded-lg file:border-0
+              file:text-xs file:font-semibold
+              file:bg-indigo-50 file:text-indigo-700
+              hover:file:bg-indigo-100/60
+              cursor-pointer"
           />
-          <p className="text-[10px] text-zinc-400 mt-1">Để trống để sử dụng ảnh mặc định của hệ thống.</p>
+          <p className="text-[10px] text-zinc-400 mt-1">Chọn một tệp hình ảnh để tải lên làm ảnh bìa khóa học.</p>
         </div>
 
         <div className="pt-4 border-t border-zinc-200 flex items-center justify-end gap-3">

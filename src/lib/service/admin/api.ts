@@ -254,5 +254,28 @@ export const adminService = {
         createdAt: new Date().toISOString()
       };
     }
+  },
+
+  rejectPayout: async (transactionId: string): Promise<WalletTransaction> => {
+    if (USE_MOCK) {
+      await delay(600);
+      const tx = mockTransactions.find((t) => t.walletTransactionId === transactionId);
+      if (!tx) throw new Error('Không tìm thấy giao dịch');
+      tx.status = 2; // Rejected/Failed
+      return tx;
+    } else {
+      const res = await apiClient.post<any>(`/admin/payouts/${transactionId}/reject`);
+      if (!res.data.isSuccess) {
+        throw new Error(res.data.errorMessage || 'Lỗi khi từ chối yêu cầu rút tiền');
+      }
+      return {
+        walletTransactionId: transactionId,
+        walletId: transactionId,
+        amount: 0,
+        type: 1,
+        status: 2, // Rejected/Failed
+        createdAt: new Date().toISOString()
+      };
+    }
   }
 };

@@ -33,6 +33,19 @@ export default function AdminPayoutsPage() {
     }
   };
 
+  const handleReject = async (txId: string) => {
+    if (!window.confirm('Bạn có chắc chắn muốn từ chối yêu cầu rút tiền này không? Số tiền sẽ được hoàn trả lại vào ví của giảng viên.')) {
+      return;
+    }
+    try {
+      await adminService.rejectPayout(txId);
+      setPayouts((prev) => prev.filter((p) => p.walletTransactionId !== txId));
+      alert('Đã từ chối lệnh rút tiền và hoàn tiền vào ví giảng viên thành công!');
+    } catch (err: any) {
+      alert(err.message || 'Lỗi khi từ chối yêu cầu rút tiền');
+    }
+  };
+
   const formatVND = (num: number) => {
     return num.toLocaleString('vi-VN') + ' đ';
   };
@@ -66,7 +79,7 @@ export default function AdminPayoutsPage() {
                   <h3 className="font-bold text-zinc-800 text-sm">
                     Yêu cầu rút tiền từ Giảng viên
                   </h3>
-                  <p className="text-xs text-zinc-500 font-medium leading-relaxed">
+                  <p className="text-xs text-zinc-50500 font-medium leading-relaxed">
                     Nội dung chuyển khoản: <span className="font-semibold text-zinc-700">{tx.description}</span>
                   </p>
                   <div className="flex flex-wrap items-center gap-3.5 text-[10px] text-zinc-400 pt-1">
@@ -81,13 +94,21 @@ export default function AdminPayoutsPage() {
                 <span className="text-lg font-extrabold text-red-600">
                   -{formatVND(tx.amount)}
                 </span>
-                <button
-                  onClick={() => handleApprove(tx.walletTransactionId)}
-                  className="w-full md:w-auto inline-flex items-center justify-center gap-1.5 rounded-lg bg-green-600 hover:bg-green-700 py-2.5 px-4 text-xs font-semibold text-white shadow-md transition-all cursor-pointer"
-                >
-                  <CheckCircle className="h-4.5 w-4.5" />
-                  Phê duyệt thanh toán
-                </button>
+                <div className="flex flex-col sm:flex-row gap-2 w-full md:w-auto">
+                  <button
+                    onClick={() => handleReject(tx.walletTransactionId)}
+                    className="w-full sm:w-auto inline-flex items-center justify-center gap-1.5 rounded-lg bg-red-600 hover:bg-red-700 py-2 px-4 text-xs font-semibold text-white shadow-md transition-all cursor-pointer"
+                  >
+                    Từ chối
+                  </button>
+                  <button
+                    onClick={() => handleApprove(tx.walletTransactionId)}
+                    className="w-full sm:w-auto inline-flex items-center justify-center gap-1.5 rounded-lg bg-green-600 hover:bg-green-700 py-2 px-4 text-xs font-semibold text-white shadow-md transition-all cursor-pointer"
+                  >
+                    <CheckCircle className="h-4.5 w-4.5" />
+                    Phê duyệt
+                  </button>
+                </div>
               </div>
             </div>
           ))}

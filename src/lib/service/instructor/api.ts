@@ -30,7 +30,7 @@ export const instructorService = {
     }
   },
 
-  createCourse: async (instructorId: string, courseData: Partial<Course>): Promise<Course> => {
+  createCourse: async (instructorId: string, courseData: Partial<Course> & { imageFile?: File }): Promise<Course> => {
     if (USE_MOCK) {
       await delay(800);
       const newCourse: Course = {
@@ -61,6 +61,10 @@ export const instructorService = {
       // Mặc định sử dụng Tiếng Việt seed Guid: 8a9b1759-b4a8-4112-8f42-2a095a8cda9a
       formData.append('LanguageId', '8a9b1759-b4a8-4112-8f42-2a095a8cda9a');
       formData.append('Tags', '');
+
+      if (courseData.imageFile) {
+        formData.append('ImageFile', courseData.imageFile);
+      }
 
       const res = await apiClient.post<any>('/instructor/courses', formData, {
         headers: { 'Content-Type': 'multipart/form-data' }
@@ -332,7 +336,8 @@ export const instructorService = {
       const txs = w.transactions || [];
       return txs.map((t: any) => {
         // Map backend TransactionType (0: Earning, 1: Withdrawal) to frontend TransactionType (2: Earnings, 1: Withdrawal)
-        const isEarning = t.transactionType === 0;
+        const isRefund = t.description && t.description.includes('Refund:');
+        const isEarning = t.transactionType === 0 || isRefund;
         const type = isEarning ? 2 : 1; 
 
         // Map status based on description
@@ -342,6 +347,8 @@ export const instructorService = {
             status = 0; // Pending
           } else if (t.description && t.description.includes('(Approved)')) {
             status = 1; // Completed
+          } else if (t.description && t.description.includes('(Rejected)')) {
+            status = 2; // Failed / Rejected
           }
         }
 
