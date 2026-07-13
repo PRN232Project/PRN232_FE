@@ -29,7 +29,12 @@ export const adminService = {
           { name: 'Admin', value: mockUsers.filter((u) => u.role === 0).length },
           { name: 'Giảng viên', value: instructorCount },
           { name: 'Học viên', value: studentCount },
-        ]
+        ],
+        topCourseTitle: 'Khóa học lập trình React & Next.js chuyên sâu',
+        topCourseEnrolls: 18,
+        topInstructorName: 'Giảng viên Nguyễn Văn A',
+        topInstructorStudents: 32,
+        recentPayments: []
       };
     } else {
       const year = new Date().getFullYear();
@@ -58,7 +63,12 @@ export const adminService = {
           { name: 'Admin', value: dashboard.adminCount || 0 },
           { name: 'Giảng viên', value: dashboard.instructorCount || 0 },
           { name: 'Học viên', value: dashboard.studentCount || 0 }
-        ]
+        ],
+        topCourseTitle: overview.topCourseTitle || undefined,
+        topCourseEnrolls: overview.topCourseEnrolls || undefined,
+        topInstructorName: overview.topInstructorName || undefined,
+        topInstructorStudents: overview.topInstructorStudents || undefined,
+        recentPayments: overview.recentPayments || []
       };
     }
   },

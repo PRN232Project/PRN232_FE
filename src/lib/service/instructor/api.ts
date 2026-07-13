@@ -454,10 +454,17 @@ export const instructorService = {
       return {
         totalEarnings: Number(data.totalRevenue || 0) * 0.9,
         totalStudents: data.totalStudents || 0,
-        activeCoursesCount: 0,
-        averageRating: 4.8,
-        monthlyRevenue: [],
-        popularCourses: []
+        activeCoursesCount: data.activeCoursesCount || 0,
+        averageRating: data.averageRating || 5.0,
+        monthlyRevenue: (data.monthlyRevenue || []).map((m: any) => ({
+          month: m.month,
+          amount: Number(m.amount || 0) * 0.9
+        })),
+        popularCourses: (data.popularCourses || []).map((c: any) => ({
+          title: c.title,
+          enrollments: c.enrollments || 0,
+          revenue: Number(c.revenue || 0) * 0.9
+        }))
       };
     }
   }

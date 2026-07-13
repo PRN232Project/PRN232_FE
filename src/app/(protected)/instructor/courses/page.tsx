@@ -208,7 +208,7 @@ export default function InstructorCoursesPage() {
                 className="flex flex-col rounded-xl border border-zinc-200 bg-white overflow-hidden shadow-sm hover:shadow-md transition-shadow"
               >
                 <div className="relative h-44 w-full bg-zinc-100">
-                  <img src={course.image} alt={course.title} className="h-full w-full object-cover" />
+                  <img src={course.image || 'https://images.unsplash.com/photo-1516321318423-f06f85e504b3?q=80&w=800&auto=format&fit=crop'} alt={course.title} className="h-full w-full object-cover" />
                   <div className="absolute top-4 right-4">
                     {getStatusBadge(course.status)}
                   </div>

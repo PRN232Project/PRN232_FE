@@ -100,7 +100,7 @@ export default function StudentDashboard() {
                   key={enroll.enrollmentId}
                   className="flex flex-col rounded-xl border border-zinc-200 bg-white shadow-sm overflow-hidden"
                 >
-                  <img src={c.image} alt={c.title} className="h-40 w-full object-cover" />
+                  <img src={c.image || 'https://images.unsplash.com/photo-1516321318423-f06f85e504b3?q=80&w=800&auto=format&fit=crop'} alt={c.title} className="h-40 w-full object-cover" />
                   <div className="p-6 flex-1 flex flex-col justify-between">
                     <div>
                       <h3 className="font-bold text-zinc-900 text-base line-clamp-1">{c.title}</h3>

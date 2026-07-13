@@ -5,4 +5,9 @@ export interface AdminStats {
   pendingCoursesCount: number;
   monthlyRevenue: { month: string; revenue: number }[];
   roleDistribution: { name: string; value: number }[];
+  topCourseTitle?: string;
+  topCourseEnrolls?: number;
+  topInstructorName?: string;
+  topInstructorStudents?: number;
+  recentPayments?: any[];
 }

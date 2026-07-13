@@ -5,6 +5,7 @@ import { useParams, useRouter } from 'next/navigation';
 import { useAuth } from '@/context/AuthContext';
 import { Course, Enrollment, courseService, studentService } from '@/lib/service';
 import { ChevronRight, Play, BookOpen, FileText, CheckCircle2, Lock, ArrowLeft, Users, Clock, Sparkles } from 'lucide-react';
+import CourseReviews from '@/components/CourseReviews';
 
 export default function CourseDetailPage() {
   const params = useParams();
@@ -254,6 +255,9 @@ export default function CourseDetailPage() {
               </div>
             </div>
 
+            {/* Reviews Section */}
+            <CourseReviews courseId={courseId} isEnrolled={!!enrolled} />
+
           </div>
 
           {/* Right Sidebar Column: Checkout Card Widget */}
@@ -262,7 +266,7 @@ export default function CourseDetailPage() {
               
               {/* Media Thumbnail Grid wrapper */}
               <div className="aspect-video w-full overflow-hidden rounded-2xl bg-zinc-100 mb-5 relative group border border-zinc-200">
-                <img src={course.image} alt={course.title} className="h-full w-full object-cover group-hover:scale-[1.02] transition-transform duration-300" />
+                <img src={course.image || 'https://images.unsplash.com/photo-1516321318423-f06f85e504b3?q=80&w=800&auto=format&fit=crop'} alt={course.title} className="h-full w-full object-cover group-hover:scale-[1.02] transition-transform duration-300" />
                 <div className="absolute inset-0 bg-black/10 flex items-center justify-center" />
               </div>
 
