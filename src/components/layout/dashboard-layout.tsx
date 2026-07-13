@@ -2,7 +2,8 @@
 
 import React, { useState } from 'react';
 import { useAuth } from '@/context/AuthContext';
-import { GraduationCap, ChevronDown, Bell, Menu } from 'lucide-react';
+import { GraduationCap, ChevronDown, Menu } from 'lucide-react';
+import NotificationBell from '@/components/shared/NotificationBell';
 
 interface DashboardLayoutProps {
   title: string;
@@ -77,10 +78,7 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({
           </div>
 
           <div className="flex items-center gap-4">
-            <button className="relative p-1.5 rounded-full hover:bg-zinc-100 text-zinc-400 hover:text-zinc-600 transition-colors">
-              <Bell className="h-4.5 w-4.5" />
-              <span className="absolute top-1 right-1 h-1.5 w-1.5 rounded-full bg-red-500"></span>
-            </button>
+            <NotificationBell />
 
             {/* Profile Dropdown */}
             {user && (

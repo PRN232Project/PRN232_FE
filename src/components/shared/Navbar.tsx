@@ -2,8 +2,9 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 import { useAuth } from '@/context/AuthContext';
-import { BookOpen, User as UserIcon, LogOut, ChevronDown, Search, Bell, Award, PlayCircle, MessageSquare } from 'lucide-react';
+import { BookOpen, User as UserIcon, LogOut, ChevronDown, Search, Award, PlayCircle, MessageSquare } from 'lucide-react';
 import { useRouter } from 'next/navigation';
+import NotificationBell from '@/components/shared/NotificationBell';
 
 export const Navbar: React.FC = () => {
   const { user, logout, isAdmin, isInstructor, isStudent } = useAuth();
@@ -126,11 +127,8 @@ export const Navbar: React.FC = () => {
                 </a>
               )}
 
-              {/* Notification Bell */}
-              <button className="p-2 text-zinc-500 hover:text-zinc-950 hover:bg-zinc-100 rounded-xl transition-all relative">
-                <Bell className="h-4.5 w-4.5" />
-                <span className="absolute top-2 right-2 w-2 h-2 bg-rose-500 rounded-full border border-white ring-1 ring-white/50 animate-pulse"></span>
-              </button>
+              {/* Notification Bell - realtime */}
+              <NotificationBell />
 
               {/* Profile Menu Trigger */}
               <div className="relative">

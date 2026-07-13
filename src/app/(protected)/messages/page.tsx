@@ -1,73 +1,162 @@
 'use client';
 
-import React, { useEffect, useState, useRef } from 'react';
+import React, { useEffect, useState, useRef, useCallback } from 'react';
 import { useAuth } from '@/context/AuthContext';
+import { useSignalR, RealtimeMessage } from '@/context/SignalRContext';
 import { Message, messageService } from '@/lib/service';
-import { Send, User, MessageSquare } from 'lucide-react';
+import { Send, User, MessageSquare, Wifi, WifiOff } from 'lucide-react';
 
 export default function UnifiedMessagesPage() {
   const { user } = useAuth();
+  const { chatConnected, sendMessage: signalRSend, onReceiveMessage, onMessageSent, markRead, onlineUsers } =
+    useSignalR();
+
   const [contacts, setContacts] = useState<any[]>([]);
   const [selectedContact, setSelectedContact] = useState<any | null>(null);
   const [messages, setMessages] = useState<Message[]>([]);
   const [inputText, setInputText] = useState('');
   const chatContainerRef = useRef<HTMLDivElement | null>(null);
+  const selectedContactRef = useRef<any>(null);
 
-  // Tải danh sách liên hệ (contacts) từ API
+  // Keep ref in sync so we can access it inside event handlers
   useEffect(() => {
-    if (!user) return;
-    const loadContacts = async () => {
-      try {
-        const data = await messageService.getContacts();
-        setContacts(data);
-        // Tự động chọn contact đầu tiên nếu chưa chọn ai
-        if (data.length > 0 && !selectedContact) {
-          setSelectedContact(data[0]);
-        }
-      } catch (err) {
-        console.error('Lỗi khi tải danh sách liên hệ:', err);
-      }
-    };
-
-    loadContacts();
-    const interval = setInterval(loadContacts, 5000);
-    return () => clearInterval(interval);
-  }, [user, selectedContact]);
-
-  // Tải tin nhắn của cuộc trò chuyện hiện tại
-  useEffect(() => {
-    if (!selectedContact) return;
-    const loadMessages = async () => {
-      try {
-        const data = await messageService.getConversation(selectedContact.id);
-        setMessages(data);
-      } catch (err) {
-        console.error('Lỗi khi tải tin nhắn:', err);
-      }
-    };
-
-    loadMessages();
-    const interval = setInterval(loadMessages, 3000);
-    return () => clearInterval(interval);
+    selectedContactRef.current = selectedContact;
   }, [selectedContact]);
 
-  // Scroll to bottom of chat container only
+  // ── Load contacts (REST, chỉ 1 lần) ──────────────────────────────────────
   useEffect(() => {
-    if (chatContainerRef.current) {
-      chatContainerRef.current.scrollTop = chatContainerRef.current.scrollHeight;
+    if (!user) return;
+    messageService
+      .getContacts()
+      .then((data) => {
+        setContacts(data);
+        if (data.length > 0 && !selectedContactRef.current) {
+          setSelectedContact(data[0]);
+        }
+      })
+      .catch(console.error);
+  }, [user]);
+
+  // ── Load lịch sử tin nhắn khi chọn contact ───────────────────────────────
+  useEffect(() => {
+    if (!selectedContact) return;
+    messageService
+      .getConversation(selectedContact.id)
+      .then((data) => {
+        setMessages(data);
+        // Mark messages as read via SignalR
+        if (chatConnected) {
+          markRead(selectedContact.id).catch(console.error);
+        }
+      })
+      .catch(console.error);
+  }, [selectedContact, chatConnected, markRead]);
+
+  // ── SignalR: nhận tin nhắn realtime ──────────────────────────────────────
+  useEffect(() => {
+    const unsub = onReceiveMessage((msg: RealtimeMessage) => {
+      const currentContact = selectedContactRef.current;
+      // Chỉ thêm vào conversation hiện tại nếu đúng partner
+      if (
+        currentContact &&
+        (msg.senderId === currentContact.id || msg.receiverId === currentContact.id)
+      ) {
+        const mapped: Message = {
+          messageId: msg.messageId,
+          senderId: msg.senderId,
+          receiverId: msg.receiverId,
+          content: msg.content,
+          createdAt: msg.sentAt,
+          isRead: msg.isRead,
+          senderName: msg.senderName,
+        };
+        setMessages((prev) => {
+          // Tránh duplicate
+          if (prev.some((m) => m.messageId === msg.messageId)) return prev;
+          return [...prev, mapped];
+        });
+      }
+
+      // Cập nhật lastMessage trong contacts list
+      setContacts((prev) =>
+        prev.map((c) =>
+          c.id === msg.senderId || c.id === msg.receiverId
+            ? { ...c, lastMessage: msg.content, lastTime: formatTime(msg.sentAt) }
+            : c
+        )
+      );
+    });
+
+    return unsub;
+  }, [onReceiveMessage]);
+
+  // ── SignalR: confirm tin nhắn đã gửi ─────────────────────────────────────
+  useEffect(() => {
+    const unsub = onMessageSent((msg: RealtimeMessage) => {
+      const mapped: Message = {
+        messageId: msg.messageId,
+        senderId: msg.senderId,
+        receiverId: msg.receiverId,
+        content: msg.content,
+        createdAt: msg.sentAt,
+        isRead: msg.isRead,
+        senderName: msg.senderName,
+      };
+      setMessages((prev) => {
+        if (prev.some((m) => m.messageId === msg.messageId)) return prev;
+        return [...prev, mapped];
+      });
+
+      setContacts((prev) =>
+        prev.map((c) =>
+          c.id === msg.receiverId
+            ? { ...c, lastMessage: msg.content, lastTime: formatTime(msg.sentAt) }
+            : c
+        )
+      );
+    });
+
+    return unsub;
+  }, [onMessageSent]);
+
+  // ── Auto-scroll (chỉ khi đang ở bottom) ──────────────────────────────────
+  useEffect(() => {
+    const el = chatContainerRef.current;
+    if (!el) return;
+    const threshold = 100;
+    const isNearBottom = el.scrollHeight - el.scrollTop - el.clientHeight < threshold;
+    if (isNearBottom) {
+      el.scrollTop = el.scrollHeight;
     }
   }, [messages]);
 
+  // ── Send message ──────────────────────────────────────────────────────────
   const handleSend = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!selectedContact || !inputText.trim()) return;
 
+    const content = inputText.trim();
+    setInputText('');
+
     try {
-      const sentMsg = await messageService.sendMessage(selectedContact.id, inputText.trim());
-      setMessages((prev) => [...prev, sentMsg]);
-      setInputText('');
+      if (chatConnected) {
+        // Dùng SignalR realtime
+        await signalRSend(selectedContact.id, content);
+      } else {
+        // Fallback: REST API
+        const sentMsg = await messageService.sendMessage(selectedContact.id, content);
+        setMessages((prev) => [...prev, sentMsg]);
+      }
     } catch (err: any) {
       console.error('Lỗi gửi tin nhắn:', err);
+    }
+  };
+
+  // ── Handle Enter key ──────────────────────────────────────────────────────
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+      handleSend(e as any);
     }
   };
 
@@ -85,6 +174,18 @@ export default function UnifiedMessagesPage() {
           <h2 className="text-sm font-bold text-zinc-900 flex items-center gap-2">
             <MessageSquare className="h-4 w-4 text-blue-600" />
             Hội thoại
+            {/* Connection indicator */}
+            <span className="ml-auto">
+              {chatConnected ? (
+                <span className="flex items-center gap-1 text-[10px] text-emerald-600 font-medium">
+                  <Wifi className="h-3 w-3" /> Live
+                </span>
+              ) : (
+                <span className="flex items-center gap-1 text-[10px] text-zinc-400 font-medium">
+                  <WifiOff className="h-3 w-3" /> Offline
+                </span>
+              )}
+            </span>
           </h2>
         </div>
         <div className="flex-1 overflow-y-auto p-2 space-y-1">
@@ -95,23 +196,29 @@ export default function UnifiedMessagesPage() {
           ) : (
             contacts.map((c) => {
               const isSelected = selectedContact?.id === c.id;
+              const isOnline = onlineUsers.has(c.id);
               return (
                 <button
                   key={c.id}
                   onClick={() => setSelectedContact(c)}
                   className={`w-full flex items-center gap-3 p-3 rounded-lg text-left transition-all cursor-pointer ${
                     isSelected
-                      ? 'bg-blue-550 bg-blue-50 text-blue-900 border-l-4 border-blue-600'
+                      ? 'bg-blue-50 text-blue-900 border-l-4 border-blue-600'
                       : 'hover:bg-zinc-100 text-zinc-700'
                   }`}
                 >
-                  <div className="h-10 w-10 rounded-full bg-zinc-200 flex items-center justify-center text-zinc-600 shrink-0">
+                  <div className="relative h-10 w-10 rounded-full bg-zinc-200 flex items-center justify-center text-zinc-600 shrink-0">
                     <User className="h-5 w-5" />
+                    {isOnline && (
+                      <span className="absolute bottom-0 right-0 h-2.5 w-2.5 rounded-full bg-emerald-500 border-2 border-white" />
+                    )}
                   </div>
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center justify-between">
                       <span className="text-xs font-bold truncate">{c.name}</span>
-                      {c.lastTime && <span className="text-[10px] text-zinc-400">{c.lastTime}</span>}
+                      {c.lastTime && (
+                        <span className="text-[10px] text-zinc-400">{c.lastTime}</span>
+                      )}
                     </div>
                     <p className="text-[11px] text-zinc-400 truncate">{c.lastMessage}</p>
                   </div>
@@ -128,12 +235,21 @@ export default function UnifiedMessagesPage() {
           <>
             {/* Header */}
             <div className="flex items-center gap-3 border-b border-zinc-200 px-6 py-4 bg-zinc-50">
-              <div className="h-10 w-10 rounded-full bg-zinc-200 flex items-center justify-center text-zinc-600">
+              <div className="relative h-10 w-10 rounded-full bg-zinc-200 flex items-center justify-center text-zinc-600">
                 <User className="h-5 w-5" />
+                {onlineUsers.has(selectedContact.id) && (
+                  <span className="absolute bottom-0 right-0 h-2.5 w-2.5 rounded-full bg-emerald-500 border-2 border-white" />
+                )}
               </div>
               <div>
                 <h2 className="text-sm font-bold text-zinc-950">{selectedContact.name}</h2>
-                <span className="text-[10px] text-zinc-500 font-medium">Trò chuyện trực tiếp</span>
+                <span className="text-[10px] font-medium">
+                  {onlineUsers.has(selectedContact.id) ? (
+                    <span className="text-emerald-600">● Đang hoạt động</span>
+                  ) : (
+                    <span className="text-zinc-400">Ngoại tuyến</span>
+                  )}
+                </span>
               </div>
             </div>
 
@@ -176,14 +292,16 @@ export default function UnifiedMessagesPage() {
                 type="text"
                 value={inputText}
                 onChange={(e) => setInputText(e.target.value)}
-                placeholder="Nhập tin nhắn..."
+                onKeyDown={handleKeyDown}
+                placeholder={chatConnected ? 'Nhập tin nhắn...' : 'Đang kết nối...'}
                 className="flex-1 rounded-xl border border-zinc-300 px-4 py-2.5 text-xs text-zinc-950 focus:outline-none focus:ring-1 focus:ring-blue-500"
               />
               <button
                 type="submit"
-                className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl text-white shadow bg-blue-600 hover:bg-blue-700 transition-all cursor-pointer"
+                disabled={!inputText.trim()}
+                className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl text-white shadow bg-blue-600 hover:bg-blue-700 transition-all cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                <Send className="h-4.5 w-4.5" />
+                <Send className="h-4 w-4" />
               </button>
             </form>
           </>
