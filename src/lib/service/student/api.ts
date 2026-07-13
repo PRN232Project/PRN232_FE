@@ -280,10 +280,10 @@ export const studentService = {
         throw new Error(res.data.errorMessage || 'Lỗi khi tải danh sách chứng chỉ');
       }
       return (res.data.result || []).map((c: any) => ({
-        certificateId: c.certificateId,
+        certificateId: c.certificateCode || c.certificateId,
         userId: userId,
         courseId: c.courseId,
-        issuedAt: c.issuedAt || c.createdAt || new Date().toISOString(),
+        issuedAt: c.issueDate || c.issuedAt || c.createdAt || new Date().toISOString(),
         credentialUrl: c.credentialUrl || '#',
         courseTitle: c.courseTitle || 'Khóa học',
         studentName: c.studentName || 'Học viên',

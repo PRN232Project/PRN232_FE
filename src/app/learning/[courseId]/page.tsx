@@ -162,6 +162,15 @@ export default function LearningPage() {
 
         {/* Progress percent bar */}
         <div className="flex items-center gap-4">
+          {overallProgress === 100 && (
+            <a
+              href="/certificates"
+              className="flex items-center gap-1.5 bg-amber-600/20 text-amber-400 border border-amber-500/30 font-semibold text-[10px] px-2.5 py-1 rounded-lg transition-colors hover:bg-amber-600/30 cursor-pointer"
+            >
+              <Award className="h-3.5 w-3.5" />
+              Xem chứng chỉ
+            </a>
+          )}
           <div className="hidden sm:flex flex-col text-right">
             <span className="text-[10px] text-zinc-400 font-medium">Tiến trình khóa học</span>
             <span className="text-xs font-bold text-blue-400">{overallProgress}% Hoàn thành</span>
@@ -182,6 +191,27 @@ export default function LearningPage() {
         <div className="flex-1 flex flex-col overflow-y-auto p-6 lg:p-8 bg-zinc-900 border-r border-zinc-800">
           {selectedItem ? (
             <div className="max-w-4xl mx-auto w-full space-y-6 flex-1 flex flex-col">
+              
+              {overallProgress === 100 && (
+                <div className="bg-gradient-to-r from-amber-500/10 to-orange-500/10 border border-amber-500/30 rounded-2xl p-6 flex flex-col sm:flex-row items-center justify-between gap-4 shadow-sm">
+                  <div className="flex items-center gap-4 text-center sm:text-left flex-col sm:flex-row">
+                    <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-amber-500 text-white shrink-0">
+                      <GraduationCap className="h-6 w-6" />
+                    </div>
+                    <div className="space-y-1">
+                      <h3 className="font-bold text-white text-sm">Chúc mừng bạn đã hoàn thành khóa học!</h3>
+                      <p className="text-xs text-zinc-400">Bạn đã xuất sắc vượt qua toàn bộ nội dung của khóa học này.</p>
+                    </div>
+                  </div>
+                  <a
+                    href="/certificates"
+                    className="inline-flex items-center gap-1.5 rounded-xl bg-amber-600 hover:bg-amber-700 py-2.5 px-4 text-xs font-semibold text-white shadow-md transition-all cursor-pointer shrink-0"
+                  >
+                    <Award className="h-4.5 w-4.5" />
+                    Xem Chứng Chỉ
+                  </a>
+                </div>
+              )}
               
               {selectedItem.type === LessonItemType.Video && (() => {
                 const videoUrl = selectedItem.url || selectedItem.videoUrl || '';

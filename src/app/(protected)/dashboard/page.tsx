@@ -125,13 +125,32 @@ export default function StudentDashboard() {
                           <Clock className="h-3.5 w-3.5" />
                           <span>Mở khóa 100%</span>
                         </div>
-                        <a
-                          href={`/learning/${c.courseId}`}
-                          className="inline-flex items-center gap-1 rounded-lg bg-blue-50 text-blue-700 hover:bg-blue-100 px-3 py-1.5 text-xs font-semibold transition-colors"
-                        >
-                          Học tiếp
-                          <ChevronRight className="h-3.5 w-3.5" />
-                        </a>
+                        {enroll.progressPercent === 100 ? (
+                          <div className="flex items-center gap-2">
+                            <a
+                              href="/certificates"
+                              className="inline-flex items-center gap-1 rounded-lg bg-amber-50 text-amber-700 hover:bg-amber-100 px-3 py-1.5 text-xs font-semibold transition-colors cursor-pointer"
+                            >
+                              <Award className="h-3.5 w-3.5" />
+                              Chứng chỉ
+                            </a>
+                            <a
+                              href={`/learning/${c.courseId}`}
+                              className="inline-flex items-center gap-1 rounded-lg bg-zinc-100 text-zinc-700 hover:bg-zinc-200 px-3 py-1.5 text-xs font-semibold transition-colors cursor-pointer"
+                            >
+                              Xem lại
+                              <ChevronRight className="h-3.5 w-3.5" />
+                            </a>
+                          </div>
+                        ) : (
+                          <a
+                            href={`/learning/${c.courseId}`}
+                            className="inline-flex items-center gap-1 rounded-lg bg-blue-50 text-blue-700 hover:bg-blue-100 px-3 py-1.5 text-xs font-semibold transition-colors"
+                          >
+                            Học tiếp
+                            <ChevronRight className="h-3.5 w-3.5" />
+                          </a>
+                        )}
                       </div>
                     </div>
                   </div>
