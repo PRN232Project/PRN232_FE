@@ -80,8 +80,14 @@ export default function CertificatesPage() {
       )}
 
       {activeCert && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-zinc-950/60 p-4">
-          <div className="relative w-full max-w-4xl rounded-2xl bg-white p-6 md:p-8 shadow-2xl overflow-y-auto max-h-[90vh]">
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-zinc-950/60 p-4"
+          onClick={() => setActiveCert(null)}
+        >
+          <div
+            className="relative w-full max-w-4xl rounded-2xl bg-white p-6 md:p-8 shadow-2xl overflow-y-auto max-h-[90vh]"
+            onClick={(e) => e.stopPropagation()}
+          >
             
             <div className="flex items-center justify-between border-b border-zinc-200 pb-4 mb-6 print:hidden">
               <span className="text-sm font-semibold text-zinc-800">Bản xem trước chứng chỉ</span>
@@ -95,7 +101,7 @@ export default function CertificatesPage() {
                 </button>
                 <button
                   onClick={() => setActiveCert(null)}
-                  className="rounded-lg p-1.5 hover:bg-zinc-100 text-zinc-50/80 hover:text-zinc-800 transition-colors cursor-pointer"
+                  className="rounded-lg p-1.5 hover:bg-zinc-100 text-zinc-500 hover:text-zinc-800 transition-colors cursor-pointer"
                 >
                   <X className="h-5 w-5" />
                 </button>

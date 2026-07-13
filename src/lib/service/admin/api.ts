@@ -277,5 +277,19 @@ export const adminService = {
         createdAt: new Date().toISOString()
       };
     }
+  },
+
+  getCourseDetailForAdmin: async (courseId: string): Promise<any> => {
+    if (USE_MOCK) {
+      await delay(300);
+      const course = mockCourses.find((c) => c.courseId === courseId);
+      return course ?? null;
+    } else {
+      const res = await apiClient.get<any>(`/admin/courses/${courseId}/detail`);
+      if (!res.data.isSuccess) {
+        throw new Error(res.data.errorMessage || 'Lỗi khi tải chi tiết khóa học');
+      }
+      return res.data.result;
+    }
   }
 };

@@ -2,7 +2,25 @@
 
 import React, { useEffect, useState } from 'react';
 import { Course, adminService } from '@/lib/service';
-import { BookOpen, CheckCircle, XCircle, ChevronRight, User, Search, X } from 'lucide-react';
+import { BookOpen, CheckCircle, XCircle, ChevronDown, ChevronUp, User, Search, X, Eye, FileText } from 'lucide-react';
+
+interface CourseModule {
+  moduleId: string;
+  title: string;
+  index: number;
+  lessons: { lessonId: string; title: string; description?: string; orderIndex: number; estimatedMinutes: number }[];
+}
+
+interface CourseDetail {
+  courseId: string;
+  title: string;
+  description: string;
+  price: number;
+  image?: string;
+  level?: string;
+  instructorName: string;
+  modules: CourseModule[];
+}
 
 export default function AdminCoursesPage() {
   const [courses, setCourses] = useState<Course[]>([]);
@@ -14,6 +32,11 @@ export default function AdminCoursesPage() {
   const [rejectCourseId, setRejectCourseId] = useState<string | null>(null);
   const [rejectReason, setRejectReason] = useState('');
   const [submittingReject, setSubmittingReject] = useState(false);
+
+  // Curriculum Preview Modal
+  const [curriculumModal, setCurriculumModal] = useState<CourseDetail | null>(null);
+  const [curriculumLoading, setCurriculumLoading] = useState(false);
+  const [expandedModules, setExpandedModules] = useState<Set<string>>(new Set());
 
   const loadPendingCourses = async () => {
     try {
@@ -37,6 +60,7 @@ export default function AdminCoursesPage() {
     try {
       await adminService.reviewCourse(courseId, true, '');
       setCourses((prev) => prev.filter((c) => c.courseId !== courseId));
+      if (curriculumModal?.courseId === courseId) setCurriculumModal(null);
       alert('Đã phê duyệt và xuất bản khóa học thành công!');
     } catch (err: any) {
       alert(err.message || 'Lỗi khi phê duyệt khóa học');
@@ -61,6 +85,7 @@ export default function AdminCoursesPage() {
     try {
       await adminService.reviewCourse(rejectCourseId, false, rejectReason.trim());
       setCourses((prev) => prev.filter((c) => c.courseId !== rejectCourseId));
+      if (curriculumModal?.courseId === rejectCourseId) setCurriculumModal(null);
       setRejectModalOpen(false);
       setRejectCourseId(null);
       alert('Đã từ chối khóa học và gửi ý kiến phản hồi tới giảng viên.');
@@ -69,6 +94,33 @@ export default function AdminCoursesPage() {
     } finally {
       setSubmittingReject(false);
     }
+  };
+
+  const openCurriculumModal = async (courseId: string) => {
+    setCurriculumLoading(true);
+    setCurriculumModal(null);
+    setExpandedModules(new Set());
+    try {
+      const detail = await adminService.getCourseDetailForAdmin(courseId);
+      setCurriculumModal(detail);
+      // Expand all modules by default
+      if (detail?.modules) {
+        setExpandedModules(new Set(detail.modules.map((m: CourseModule) => m.moduleId)));
+      }
+    } catch (err: any) {
+      alert(err.message || 'Không thể tải đề cương khóa học');
+    } finally {
+      setCurriculumLoading(false);
+    }
+  };
+
+  const toggleModule = (moduleId: string) => {
+    setExpandedModules((prev) => {
+      const next = new Set(prev);
+      if (next.has(moduleId)) next.delete(moduleId);
+      else next.add(moduleId);
+      return next;
+    });
   };
 
   const formatVND = (num: number) => {
@@ -150,14 +202,13 @@ export default function AdminCoursesPage() {
               </div>
 
               <div className="flex gap-2.5 shrink-0 w-full lg:w-auto border-t lg:border-t-0 border-zinc-100 pt-4 lg:pt-0">
-                <a
-                  href={`/courses/${course.courseId}`}
-                  target="_blank"
-                  className="flex-1 lg:flex-initial inline-flex items-center justify-center gap-1.5 rounded-lg border border-zinc-200 bg-white hover:bg-zinc-50 py-2.5 px-4 text-xs font-semibold text-zinc-700 transition-colors shadow-sm"
+                <button
+                  onClick={() => openCurriculumModal(course.courseId)}
+                  className="flex-1 lg:flex-initial inline-flex items-center justify-center gap-1.5 rounded-lg border border-zinc-200 bg-white hover:bg-zinc-50 py-2.5 px-4 text-xs font-semibold text-zinc-700 transition-colors shadow-sm cursor-pointer"
                 >
+                  <Eye className="h-4 w-4" />
                   Xem đề cương
-                  <ChevronRight className="h-4 w-4" />
-                </a>
+                </button>
                 <button
                   onClick={() => openRejectModal(course.courseId)}
                   className="flex-1 lg:flex-initial inline-flex items-center justify-center gap-1.5 rounded-lg bg-red-50 hover:bg-red-100 py-2.5 px-4 text-xs font-semibold text-red-600 transition-colors border border-red-200 shadow-sm cursor-pointer"
@@ -178,7 +229,132 @@ export default function AdminCoursesPage() {
         </div>
       )}
 
-      {/* Custom Rejection Modal Overlay */}
+      {/* ─── Curriculum Preview Modal ─── */}
+      {(curriculumLoading || curriculumModal) && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm p-4"
+          onClick={() => { if (!curriculumLoading) setCurriculumModal(null); }}
+        >
+          <div
+            className="relative w-full max-w-2xl bg-white rounded-2xl shadow-2xl border border-zinc-100 overflow-hidden flex flex-col max-h-[90vh]"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Modal Header */}
+            <div className="flex items-start justify-between gap-4 p-5 border-b border-zinc-100">
+              <div className="flex items-center gap-3">
+                <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-indigo-50 text-indigo-600">
+                  <FileText className="h-5 w-5" />
+                </div>
+                <div>
+                  <h3 className="font-bold text-zinc-950 text-sm">
+                    {curriculumLoading ? 'Đang tải đề cương...' : curriculumModal?.title}
+                  </h3>
+                  {curriculumModal && (
+                    <p className="text-[10px] text-zinc-500 mt-0.5">
+                      GV: {curriculumModal.instructorName} · {curriculumModal.modules?.length || 0} chương
+                    </p>
+                  )}
+                </div>
+              </div>
+              <button
+                onClick={() => setCurriculumModal(null)}
+                className="shrink-0 rounded-full p-1.5 text-zinc-400 hover:bg-zinc-100 hover:text-zinc-700 transition-colors"
+              >
+                <X className="h-4 w-4" />
+              </button>
+            </div>
+
+            {/* Modal Body */}
+            <div className="overflow-y-auto flex-1">
+              {curriculumLoading ? (
+                <div className="flex items-center justify-center py-20 text-zinc-400 text-sm">
+                  <svg className="animate-spin h-5 w-5 mr-2 text-indigo-500" viewBox="0 0 24 24" fill="none">
+                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z" />
+                  </svg>
+                  Đang tải đề cương...
+                </div>
+              ) : curriculumModal?.modules?.length === 0 ? (
+                <div className="flex flex-col items-center justify-center py-16 text-center px-6">
+                  <BookOpen className="h-10 w-10 text-zinc-300 mb-3" />
+                  <p className="text-zinc-500 text-sm font-medium">Khóa học chưa có chương học nào</p>
+                  <p className="text-xs text-zinc-400 mt-1">Giảng viên chưa thêm nội dung đề cương.</p>
+                </div>
+              ) : (
+                <div className="divide-y divide-zinc-100">
+                  {curriculumModal?.modules?.map((mod, idx) => (
+                    <div key={mod.moduleId}>
+                      <button
+                        onClick={() => toggleModule(mod.moduleId)}
+                        className="w-full flex items-center justify-between gap-3 px-5 py-3.5 hover:bg-zinc-50 transition-colors text-left"
+                      >
+                        <div className="flex items-center gap-3">
+                          <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-indigo-100 text-indigo-700 text-[10px] font-bold">
+                            {idx + 1}
+                          </span>
+                          <span className="font-semibold text-zinc-800 text-sm">{mod.title}</span>
+                          <span className="text-[10px] text-zinc-400">({mod.lessons?.length || 0} bài)</span>
+                        </div>
+                        {expandedModules.has(mod.moduleId)
+                          ? <ChevronUp className="h-4 w-4 text-zinc-400 shrink-0" />
+                          : <ChevronDown className="h-4 w-4 text-zinc-400 shrink-0" />
+                        }
+                      </button>
+
+                      {expandedModules.has(mod.moduleId) && mod.lessons?.length > 0 && (
+                        <div className="bg-zinc-50/70 divide-y divide-zinc-100/80">
+                          {mod.lessons.map((lesson, lIdx) => (
+                            <div key={lesson.lessonId} className="flex items-center gap-3 px-5 py-2.5 pl-14">
+                              <span className="text-[10px] text-zinc-400 font-mono w-6 shrink-0">{lIdx + 1}.</span>
+                              <span className="text-xs text-zinc-700 flex-1">{lesson.title}</span>
+                              {lesson.estimatedMinutes > 0 && (
+                                <span className="text-[10px] text-zinc-400 shrink-0">{lesson.estimatedMinutes} phút</span>
+                              )}
+                            </div>
+                          ))}
+                        </div>
+                      )}
+
+                      {expandedModules.has(mod.moduleId) && (!mod.lessons || mod.lessons.length === 0) && (
+                        <div className="px-5 py-3 pl-14 text-xs text-zinc-400 italic bg-zinc-50/70">
+                          Chương này chưa có bài học nào.
+                        </div>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            {/* Modal Footer - approve/reject actions */}
+            {curriculumModal && (
+              <div className="flex items-center justify-between gap-3 px-5 py-4 border-t border-zinc-100 bg-zinc-50/60">
+                <p className="text-[10px] text-zinc-400">
+                  Xem xét kỹ nội dung trước khi phê duyệt.
+                </p>
+                <div className="flex gap-2">
+                  <button
+                    onClick={() => { setCurriculumModal(null); openRejectModal(curriculumModal.courseId); }}
+                    className="inline-flex items-center gap-1.5 rounded-lg bg-red-50 hover:bg-red-100 py-2 px-3.5 text-xs font-semibold text-red-600 border border-red-200 transition-colors cursor-pointer"
+                  >
+                    <XCircle className="h-3.5 w-3.5" />
+                    Từ chối
+                  </button>
+                  <button
+                    onClick={() => { setCurriculumModal(null); handleApprove(curriculumModal.courseId); }}
+                    className="inline-flex items-center gap-1.5 rounded-lg bg-green-600 hover:bg-green-700 py-2 px-3.5 text-xs font-semibold text-white shadow transition-all cursor-pointer"
+                  >
+                    <CheckCircle className="h-3.5 w-3.5" />
+                    Phê duyệt
+                  </button>
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* ─── Custom Rejection Modal Overlay ─── */}
       {rejectModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm p-4">
           <div className="relative w-full max-w-md bg-white rounded-2xl p-6 shadow-2xl border border-zinc-100 animate-in fade-in zoom-in duration-200">
