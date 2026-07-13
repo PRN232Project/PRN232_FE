@@ -11,7 +11,7 @@ export default function UnifiedMessagesPage() {
   const [selectedContact, setSelectedContact] = useState<any | null>(null);
   const [messages, setMessages] = useState<Message[]>([]);
   const [inputText, setInputText] = useState('');
-  const messagesEndRef = useRef<HTMLDivElement | null>(null);
+  const chatContainerRef = useRef<HTMLDivElement | null>(null);
 
   // Tải danh sách liên hệ (contacts) từ API
   useEffect(() => {
@@ -51,8 +51,11 @@ export default function UnifiedMessagesPage() {
     return () => clearInterval(interval);
   }, [selectedContact]);
 
+  // Scroll to bottom of chat container only
   useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+    if (chatContainerRef.current) {
+      chatContainerRef.current.scrollTop = chatContainerRef.current.scrollHeight;
+    }
   }, [messages]);
 
   const handleSend = async (e: React.FormEvent) => {
@@ -135,7 +138,7 @@ export default function UnifiedMessagesPage() {
             </div>
 
             {/* Khung tin nhắn */}
-            <div className="flex-1 overflow-y-auto p-6 space-y-4">
+            <div ref={chatContainerRef} className="flex-1 overflow-y-auto p-6 space-y-4">
               {messages.length === 0 ? (
                 <div className="text-center py-20 text-zinc-400 text-sm">
                   Chưa có tin nhắn nào. Hãy gửi tin nhắn đầu tiên!
@@ -165,7 +168,6 @@ export default function UnifiedMessagesPage() {
                   );
                 })
               )}
-              <div ref={messagesEndRef} />
             </div>
 
             {/* Ô nhập tin nhắn */}
