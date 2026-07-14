@@ -33,14 +33,14 @@ export default function CertificatesPage() {
   };
 
   if (loading) {
-    return <div className="text-zinc-50/80 text-center py-10">Đang tải chứng chỉ...</div>;
+    return <div className="text-zinc-500 text-center py-10">Đang tải chứng chỉ...</div>;
   }
 
   return (
     <div className="space-y-8">
       <div>
         <h1 className="text-2xl font-bold text-zinc-950">Chứng chỉ của tôi</h1>
-        <p className="mt-1 text-sm text-zinc-50/90">
+        <p className="mt-1 text-sm text-zinc-500">
           Nơi lưu trữ các chứng nhận hoàn thành khóa học xuất sắc của bạn
         </p>
       </div>

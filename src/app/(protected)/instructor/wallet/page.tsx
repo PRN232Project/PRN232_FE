@@ -114,7 +114,7 @@ export default function InstructorWallet() {
   };
 
   if (loading) {
-    return <div className="text-zinc-50/80 text-center py-10">Đang tải thông tin ví...</div>;
+    return <div className="text-zinc-500 text-center py-10">Đang tải thông tin ví...</div>;
   }
 
   return (

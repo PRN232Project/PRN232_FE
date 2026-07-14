@@ -302,7 +302,7 @@ export default function LearningPage() {
                                   onClick={() => handleQuizAnswer(q.questionId, opt.answerOptionId)}
                                   className={`w-full text-left flex items-center gap-3 rounded-xl border p-3.5 text-xs transition-all duration-200 outline-none ${
                                     isSelected
-                                      ? 'border-indigo-500 bg-indigo-650/10 text-indigo-300 font-bold shadow-md shadow-indigo-500/5'
+                                      ? 'border-indigo-500 bg-indigo-600/10 text-indigo-300 font-bold shadow-md shadow-indigo-500/5'
                                       : 'border-zinc-800/80 bg-zinc-950 hover:bg-zinc-900/60 text-zinc-400 hover:text-zinc-200'
                                   }`}
                                 >
@@ -461,7 +461,7 @@ export default function LearningPage() {
                                 onClick={() => handleSelectLessonItem(li, les.lessonId)}
                                 className={`w-full text-left p-2 rounded-lg text-[11px] flex items-center justify-between transition-all duration-150 cursor-pointer ${
                                   isSelected
-                                    ? 'bg-indigo-650/10 text-indigo-300 font-bold border border-indigo-500/20'
+                                    ? 'bg-indigo-600/10 text-indigo-300 font-bold border border-indigo-500/20'
                                     : 'text-zinc-500 hover:text-zinc-300 border border-transparent'
                                 }`}
                               >

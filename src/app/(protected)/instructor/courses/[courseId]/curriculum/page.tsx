@@ -735,7 +735,7 @@ export default function CurriculumBuilderPage() {
                           value={newLessonTitle}
                           onChange={(e) => setNewLessonTitle(e.target.value)}
                           placeholder="Nhập tiêu đề bài học (Ví dụ: 1.1 Cài đặt môi trường)..."
-                          className="flex-1 rounded-lg border border-zinc-300 px-3.5 py-1.5 text-xs text-zinc-950 bg-white focus:outline-none focus:border-indigo-500"
+                          className="flex-1 rounded-lg border border-zinc-300 px-3.5 py-1.5 text-xs text-zinc-950 bg-white placeholder:text-zinc-400 focus:outline-none focus:border-indigo-500"
                         />
                         <button
                           type="button"
@@ -746,7 +746,7 @@ export default function CurriculumBuilderPage() {
                         </button>
                         <button
                           onClick={() => handleAddLesson(mod.moduleId)}
-                          className="px-4 py-1.5 text-xs font-semibold text-white bg-indigo-650 hover:bg-indigo-700 rounded-lg shadow-sm transition-colors cursor-pointer"
+                          className="px-4 py-1.5 text-xs font-semibold text-white bg-indigo-600 hover:bg-indigo-700 rounded-lg shadow-sm transition-colors cursor-pointer"
                         >
                           Thêm bài học
                         </button>
@@ -789,14 +789,14 @@ export default function CurriculumBuilderPage() {
                 value={newModuleName}
                 onChange={(e) => setNewModuleName(e.target.value)}
                 placeholder="Tiêu đề chương (Ví dụ: Chương 1: Kiến trúc căn bản)..."
-                className="w-full rounded-lg border border-zinc-300 px-3.5 py-2 text-xs text-zinc-950 bg-white focus:outline-none focus:border-indigo-500"
+                className="w-full rounded-lg border border-zinc-300 px-3.5 py-2 text-xs text-zinc-950 bg-white placeholder:text-zinc-400 focus:outline-none focus:border-indigo-500"
               />
               <textarea
                 value={newModuleDesc}
                 onChange={(e) => setNewModuleDesc(e.target.value)}
                 placeholder="Mô tả tóm tắt nội dung chương (Không bắt buộc)..."
                 rows={2}
-                className="w-full rounded-lg border border-zinc-300 px-3.5 py-2 text-xs text-zinc-950 bg-white focus:outline-none focus:border-indigo-500 resize-none"
+                className="w-full rounded-lg border border-zinc-300 px-3.5 py-2 text-xs text-zinc-950 bg-white placeholder:text-zinc-400 focus:outline-none focus:border-indigo-500 resize-none"
               />
             </div>
 
@@ -819,7 +819,7 @@ export default function CurriculumBuilderPage() {
         ) : (
           <button
             onClick={() => setIsAddingModule(true)}
-            className="w-full py-4 border-2 border-dashed border-indigo-200 hover:border-indigo-300 rounded-xl text-indigo-650 hover:bg-indigo-50/50 font-bold transition-all flex items-center justify-center gap-2 cursor-pointer"
+            className="w-full py-4 border-2 border-dashed border-indigo-200 hover:border-indigo-300 rounded-xl text-indigo-600 hover:bg-indigo-50/50 font-bold transition-all flex items-center justify-center gap-2 cursor-pointer"
           >
             <Plus className="h-5 w-5" />
             Tạo chương mới (Module Section)
@@ -885,7 +885,7 @@ export default function CurriculumBuilderPage() {
                         value={materialTitle}
                         onChange={(e) => setMaterialTitle(e.target.value)}
                         placeholder="Ví dụ: 1.1 Khởi tạo và cấu trúc thư mục..."
-                        className="w-full text-xs rounded-lg border border-zinc-300 px-3.5 py-2.5 outline-none focus:border-indigo-500 font-semibold"
+                        className="w-full text-xs rounded-lg border border-zinc-300 px-3.5 py-2.5 outline-none placeholder:text-zinc-400 focus:border-indigo-500 font-semibold text-zinc-950 bg-white"
                       />
                     </div>
 
@@ -895,7 +895,7 @@ export default function CurriculumBuilderPage() {
                         <Upload className="h-8 w-8 text-zinc-400 mx-auto mb-2" />
                         
                         <div className="flex justify-center">
-                          <label className="cursor-pointer bg-white px-3.5 py-2 border border-zinc-300 rounded-lg text-[10px] font-bold text-indigo-650 hover:bg-zinc-50 shadow-sm transition">
+                          <label className="cursor-pointer bg-white px-3.5 py-2 border border-zinc-300 rounded-lg text-[10px] font-bold text-indigo-600 hover:bg-zinc-50 shadow-sm transition">
                             <span>Chọn tệp học liệu</span>
                             <input
                               type="file"
@@ -953,7 +953,7 @@ export default function CurriculumBuilderPage() {
                         value={materialTitle}
                         onChange={(e) => setMaterialTitle(e.target.value)}
                         placeholder="Ví dụ: Tổng quan lý thuyết RESTful API..."
-                        className="w-full text-xs rounded-lg border border-zinc-300 px-3.5 py-2.5 outline-none focus:border-indigo-500 font-semibold"
+                        className="w-full text-xs rounded-lg border border-zinc-300 px-3.5 py-2.5 outline-none placeholder:text-zinc-400 focus:border-indigo-500 font-semibold text-zinc-950 bg-white"
                       />
                     </div>
 
@@ -965,7 +965,7 @@ export default function CurriculumBuilderPage() {
                         value={readingContent}
                         onChange={(e) => setReadingContent(e.target.value)}
                         placeholder="Soạn thảo nội dung kiến thức, mã nguồn mẫu, hoặc chỉ dẫn học tập tại đây..."
-                        className="w-full text-xs rounded-lg border border-zinc-300 p-4 outline-none focus:border-indigo-500 resize-y leading-relaxed font-mono"
+                        className="w-full text-xs rounded-lg border border-zinc-300 p-4 outline-none placeholder:text-zinc-400 focus:border-indigo-500 resize-y leading-relaxed font-mono text-zinc-950 bg-white"
                       />
                     </div>
 
@@ -991,7 +991,7 @@ export default function CurriculumBuilderPage() {
                         value={materialTitle}
                         onChange={(e) => setMaterialTitle(e.target.value)}
                         placeholder="Ví dụ: Bài kiểm tra trắc nghiệm chương 1..."
-                        className="w-full text-xs rounded-lg border border-zinc-300 px-3.5 py-2.5 outline-none focus:border-indigo-500 font-semibold"
+                        className="w-full text-xs rounded-lg border border-zinc-300 px-3.5 py-2.5 outline-none placeholder:text-zinc-400 focus:border-indigo-500 font-semibold text-zinc-950 bg-white"
                       />
                     </div>
 
@@ -1076,7 +1076,7 @@ export default function CurriculumBuilderPage() {
                                   setQuizQuestions(updated);
                                 }}
                                 placeholder="Nhập câu hỏi trắc nghiệm..."
-                                className="w-full text-xs rounded-lg border border-zinc-300 p-2.5 bg-white outline-none focus:border-indigo-500 font-medium"
+                                className="w-full text-xs rounded-lg border border-zinc-300 p-2.5 bg-white outline-none placeholder:text-zinc-400 focus:border-indigo-500 font-medium text-zinc-950"
                               />
 
                               <div className="flex items-center gap-2">
@@ -1090,7 +1090,7 @@ export default function CurriculumBuilderPage() {
                                     updated[qIdx].points = parseInt(e.target.value) || 10;
                                     setQuizQuestions(updated);
                                   }}
-                                  className="w-16 px-2 py-1 border border-zinc-300 rounded text-xs text-center focus:outline-none focus:border-indigo-500"
+                                  className="w-16 px-2 py-1 border border-zinc-300 rounded text-xs text-center focus:outline-none focus:border-indigo-500 text-zinc-950 bg-white font-semibold"
                                 />
                               </div>
                             </div>
@@ -1118,7 +1118,7 @@ export default function CurriculumBuilderPage() {
                                     setQuizQuestions(updated);
                                   }}
                                   placeholder={oIdx === 0 ? "Đáp án đúng mẫu..." : "Đáp án gây nhiễu..."}
-                                  className={`flex-1 rounded-lg border px-3 py-1.5 text-xs outline-none transition-colors ${
+                                  className={`flex-1 rounded-lg border px-3 py-1.5 text-xs outline-none placeholder:text-zinc-400 transition-colors text-zinc-950 ${
                                     opt.isCorrect 
                                       ? 'border-indigo-300 bg-indigo-50/20 font-semibold' 
                                       : 'border-zinc-300 bg-white'

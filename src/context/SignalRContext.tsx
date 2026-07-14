@@ -88,8 +88,6 @@ export function SignalRProvider({ children }: { children: React.ReactNode }) {
     const connection = new signalR.HubConnectionBuilder()
       .withUrl(`${HUB_URL}/hubs/chat`, {
         accessTokenFactory: () => token,
-        transport: signalR.HttpTransportType.WebSockets,
-        skipNegotiation: true,
       })
       .withAutomaticReconnect()
       .configureLogging(signalR.LogLevel.Warning)
@@ -159,8 +157,6 @@ export function SignalRProvider({ children }: { children: React.ReactNode }) {
     const connection = new signalR.HubConnectionBuilder()
       .withUrl(`${HUB_URL}/hubs/notification`, {
         accessTokenFactory: () => token,
-        transport: signalR.HttpTransportType.WebSockets,
-        skipNegotiation: true,
       })
       .withAutomaticReconnect()
       .configureLogging(signalR.LogLevel.Warning)
