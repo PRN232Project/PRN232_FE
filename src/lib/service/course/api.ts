@@ -3,7 +3,7 @@ import { Course, CourseStatus } from './type';
 import { mockCourses } from '@/lib/service/mock-data';
 
 export const courseService = {
-  getCourses: async (search?: string, languageId?: string, maxPrice?: number): Promise<Course[]> => {
+  getCourses: async (search?: string, languageId?: string, isFree?: boolean): Promise<Course[]> => {
     if (USE_MOCK) {
       await delay(500);
       let list = mockCourses.filter((c) => c.status === CourseStatus.Published && !c.isDeleted);
@@ -17,15 +17,22 @@ export const courseService = {
         list = list.filter((c) => c.languageId === languageId);
       }
       
-      if (maxPrice !== undefined) {
-        list = list.filter((c) => c.price <= maxPrice);
+      if (isFree !== undefined) {
+        if (isFree) {
+          list = list.filter((c) => c.price === 0);
+        } else {
+          list = list.filter((c) => c.price > 0);
+        }
       }
       
       return list;
     } else {
-      const res = await apiClient.get<any>('/courses', {
-        params: { search }
-      });
+      const params: any = {};
+      if (search) params.search = search;
+      if (languageId && languageId !== 'all') params.languageId = languageId;
+      if (isFree !== undefined) params.isFree = isFree;
+
+      const res = await apiClient.get<any>('/courses', { params });
       if (!res.data.isSuccess) {
         throw new Error(res.data.errorMessage || 'Lỗi khi tải danh sách khóa học');
       }
@@ -39,15 +46,16 @@ export const courseService = {
         image: c.image || 'https://images.unsplash.com/photo-1516321318423-f06f85e504b3?q=80&w=800&auto=format&fit=crop',
         status: c.status || CourseStatus.Published,
         languageId: '',
+        languageName: c.languageName || 'Tiếng Việt',
         createdBy: '',
         createdAt: new Date().toISOString(),
         isDeleted: false,
         enrollmentCount: c.students || 0,
+        duration: c.duration || '12 giờ',
         instructorName: c.instructorName || 'Giảng viên'
       }));
     }
   },
-
   getCourseById: async (courseId: string): Promise<Course> => {
     if (USE_MOCK) {
       await delay(500);
@@ -70,12 +78,54 @@ export const courseService = {
         image: c.image || 'https://images.unsplash.com/photo-1516321318423-f06f85e504b3?q=80&w=800&auto=format&fit=crop',
         status: c.status || CourseStatus.Published,
         languageId: '',
+        languageName: c.languageName || 'Tiếng Việt',
         createdBy: '',
         createdAt: new Date().toISOString(),
         isDeleted: false,
         enrollmentCount: c.students || 0,
-        instructorName: c.instructorName || 'Giảng viên'
+        duration: c.duration || '12 giờ',
+        instructorName: c.instructorName || 'Giảng viên',
+        instructorBio: c.instructorBio || '',
+        modules: c.modules?.map((m: any) => ({
+          moduleId: m.moduleId,
+          courseId: m.courseId,
+          title: m.title,
+          orderIndex: m.orderIndex,
+          lessons: m.lessons?.map((l: any) => ({
+            lessonId: l.lessonId,
+            moduleId: l.moduleId,
+            title: l.title,
+            orderIndex: l.orderIndex,
+            lessonItems: l.lessonItems?.map((li: any) => ({
+              lessonItemId: li.lessonItemId,
+              lessonId: li.lessonId,
+              title: li.title,
+              type: li.type,
+              durationMinutes: li.durationMinutes,
+              orderIndex: li.orderIndex
+            }))
+          }))
+        }))
       };
+    }
+  },
+  getLandingStats: async (): Promise<{ studentsCount: number; instructorsCount: number; averageRating: number }> => {
+    if (USE_MOCK) {
+      return {
+        studentsCount: 5000,
+        instructorsCount: 12,
+        averageRating: 4.9
+      };
+    } else {
+      const res = await apiClient.get<any>('/courses/landing-stats');
+      if (!res.data.isSuccess) {
+        return {
+          studentsCount: 5000,
+          instructorsCount: 12,
+          averageRating: 4.9
+        };
+      }
+      return res.data.result;
     }
   }
 };

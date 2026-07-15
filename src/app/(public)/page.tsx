@@ -8,12 +8,17 @@ import { Search, BookOpen, Clock, Users, ArrowRight, Star, Sparkles, ShieldCheck
 export default function HomePage() {
   const { notifHub, notifConnected } = useSignalR();
   const [courses, setCourses] = useState<Course[]>([]);
+  const [stats, setStats] = useState({ studentsCount: 5000, instructorsCount: 12, averageRating: 4.9 });
   const [loading, setLoading] = useState(true);
 
   const fetchCourses = useCallback(async () => {
     try {
-      const data = await courseService.getCourses();
-      setCourses(data);
+      const [coursesData, statsData] = await Promise.all([
+        courseService.getCourses(),
+        courseService.getLandingStats()
+      ]);
+      setCourses(coursesData);
+      setStats(statsData);
     } catch (err) {
       console.error(err);
     } finally {
@@ -150,7 +155,9 @@ export default function HomePage() {
                 <Users className="h-6 w-6" />
               </div>
               <div>
-                <h3 className="text-2xl font-extrabold text-zinc-900">5,000+</h3>
+                <h3 className="text-2xl font-extrabold text-zinc-900">
+                  {stats.studentsCount.toLocaleString('vi-VN')}+
+                </h3>
                 <p className="text-xs text-zinc-500 font-semibold uppercase tracking-wider mt-0.5">Học viên tích cực</p>
               </div>
             </div>
@@ -161,7 +168,9 @@ export default function HomePage() {
                 <GraduationCap className="h-6 w-6" />
               </div>
               <div>
-                <h3 className="text-2xl font-extrabold text-zinc-900">100%</h3>
+                <h3 className="text-2xl font-extrabold text-zinc-900">
+                  {stats.instructorsCount}+
+                </h3>
                 <p className="text-xs text-zinc-500 font-semibold uppercase tracking-wider mt-0.5">Giảng viên chất lượng</p>
               </div>
             </div>
@@ -172,7 +181,9 @@ export default function HomePage() {
                 <Star className="h-6 w-6" />
               </div>
               <div>
-                <h3 className="text-2xl font-extrabold text-zinc-900">4.9 / 5.0</h3>
+                <h3 className="text-2xl font-extrabold text-zinc-900">
+                  {stats.averageRating.toFixed(1)} / 5.0
+                </h3>
                 <p className="text-xs text-zinc-500 font-semibold uppercase tracking-wider mt-0.5">Đánh giá hài lòng</p>
               </div>
             </div>
@@ -257,7 +268,7 @@ export default function HomePage() {
                     <div className="flex items-center gap-4 text-[10px] text-zinc-500 font-semibold">
                       <div className="flex items-center gap-1.5">
                         <Clock className="h-4 w-4 text-zinc-400" />
-                        <span>12h học</span>
+                        <span>{course.duration || '12 giờ'}</span>
                       </div>
                       <div className="flex items-center gap-1.5">
                         <Users className="h-4 w-4 text-zinc-400" />

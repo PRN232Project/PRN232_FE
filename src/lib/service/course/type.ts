@@ -33,6 +33,7 @@ export interface Course {
   isDeleted: boolean;
   modules?: Module[];
   enrollmentCount?: number;
+  duration?: string;
 }
 
 export interface Module {

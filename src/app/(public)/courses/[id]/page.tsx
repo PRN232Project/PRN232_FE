@@ -146,7 +146,7 @@ export default function CourseDetailPage() {
               </div>
               <div className="flex items-center gap-2">
                 <Clock className="h-4.5 w-4.5 text-indigo-400" />
-                <span>12 giờ học trực tuyến</span>
+                <span>{course.duration || '12 giờ'} học trực tuyến</span>
               </div>
               <div className="flex items-center gap-2">
                 <div className="h-6 w-6 rounded-full bg-white/10 flex items-center justify-center text-[10px] text-white">GV</div>

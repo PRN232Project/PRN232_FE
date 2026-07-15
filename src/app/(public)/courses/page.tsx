@@ -21,8 +21,15 @@ function CoursesContent() {
   const fetchFilteredCourses = async () => {
     setLoading(true);
     try {
-      const maxPrice = priceFilter === 'free' ? 0 : undefined;
-      const data = await courseService.getCourses(search, language, maxPrice);
+      const currentSearch = searchParams.get('search') || '';
+      const currentLanguage = searchParams.get('language') || 'all';
+      const currentPrice = searchParams.get('price') || 'all';
+
+      let isFree: boolean | undefined = undefined;
+      if (currentPrice === 'free') isFree = true;
+      if (currentPrice === 'paid') isFree = false;
+
+      const data = await courseService.getCourses(currentSearch, currentLanguage, isFree);
       setCourses(data);
     } catch (err) {
       console.error(err);
@@ -32,6 +39,9 @@ function CoursesContent() {
   };
 
   useEffect(() => {
+    setSearch(searchParams.get('search') || '');
+    setLanguage(searchParams.get('language') || 'all');
+    setPriceFilter(searchParams.get('price') || 'all');
     fetchFilteredCourses();
   }, [searchParams]);
 
@@ -229,7 +239,7 @@ function CoursesContent() {
                         <div className="flex items-center gap-4 text-[10px] text-zinc-500 font-semibold">
                           <div className="flex items-center gap-1.5">
                             <Clock className="h-4 w-4 text-zinc-400 animate-pulse" />
-                            <span>12h học</span>
+                            <span>{course.duration || '12 giờ'}</span>
                           </div>
                           <div className="flex items-center gap-1.5">
                             <Users className="h-4 w-4 text-zinc-400" />
