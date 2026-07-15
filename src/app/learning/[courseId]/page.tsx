@@ -35,6 +35,7 @@ export default function LearningPage() {
   const [practiceAttempt, setPracticeAttempt] = useState<any>(null);
   const [practiceLoading, setPracticeLoading] = useState(false);
   const [initialProgressLoaded, setInitialProgressLoaded] = useState(false);
+  const [wasAlreadyCompleted, setWasAlreadyCompleted] = useState(false);
 
   const loadLearningData = async () => {
     if (!user || !courseId) return;
@@ -44,6 +45,13 @@ export default function LearningPage() {
 
       const prog = await studentService.getProgress(user.userId, courseId);
       setProgressList(prog);
+
+      // Check if it was already 100% completed on load
+      const total = courseData.modules?.reduce((acc: number, m: any) => acc + (m.lessons?.length || 0), 0) || 0;
+      const completed = prog.filter((p) => p.isCompleted).length;
+      if (total > 0 && completed === total) {
+        setWasAlreadyCompleted(true);
+      }
       setInitialProgressLoaded(true);
 
       // Select first lesson item by default
@@ -75,15 +83,15 @@ export default function LearningPage() {
 
   // Auto-redirect to certificates page when progress reaches 100% in-session
   useEffect(() => {
-    if (!initialProgressLoaded || !course || progressList.length === 0) return;
+    if (!initialProgressLoaded || !course || progressList.length === 0 || wasAlreadyCompleted) return;
 
-    const total = course.modules?.reduce((acc, m) => acc + (m.lessons?.length || 0), 0) || 0;
+    const total = course.modules?.reduce((acc: number, m: any) => acc + (m.lessons?.length || 0), 0) || 0;
     const completed = progressList.filter((p) => p.isCompleted).length;
 
     if (total > 0 && completed === total) {
       router.push(`/certificates?courseId=${course.courseId}`);
     }
-  }, [progressList, course, initialProgressLoaded, router]);
+  }, [progressList, course, initialProgressLoaded, wasAlreadyCompleted, router]);
 
   const handleSelectLessonItem = (item: LessonItem, lessonId: string) => {
     setSelectedItem(item);
