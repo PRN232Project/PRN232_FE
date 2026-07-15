@@ -127,5 +127,35 @@ export const courseService = {
       }
       return res.data.result;
     }
+  },
+  gradePracticeWithAI: async (submittedText: string, guidelines: string): Promise<{ score: number; feedback: string; isPassed: boolean }> => {
+    const res = await fetch('/api/practice/grade', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({ submittedText, guidelines })
+    });
+    const data = await res.json();
+    if (!res.ok || !data.isSuccess) {
+      throw new Error(data.errorMessage || 'Lỗi khi kết nối với AI chấm bài.');
+    }
+    return data.result;
+  },
+  submitPracticeAttempt: async (request: { lessonItemId: string; submittedText: string; score: number; feedback: string; isPassed: boolean }): Promise<any> => {
+    if (USE_MOCK) {
+      return {
+        gradedAttemptId: 'mock-attempt-id',
+        score: request.score,
+        feedback: request.feedback,
+        isPassed: request.isPassed
+      };
+    } else {
+      const res = await apiClient.post<any>('/student/practice/submit', request);
+      if (!res.data.isSuccess) {
+        throw new Error(res.data.errorMessage || 'Lỗi khi nộp bài tập thực hành.');
+      }
+      return res.data.result;
+    }
   }
 };

@@ -9,6 +9,7 @@ export enum LessonItemType {
   Video = 0,
   Article = 1,
   Quiz = 2,
+  Practice = 3,
 }
 
 export interface Language {
@@ -60,6 +61,7 @@ export interface LessonItem {
   durationMinutes: number;
   orderIndex: number;
   gradedItem?: GradedItem;
+  practice?: PracticeItem;
   lessonResources?: LessonResource[];
   content?: string;
   videoUrl?: string;
@@ -98,4 +100,22 @@ export interface AnswerOption {
   optionText: string;
   isCorrect: boolean;
   orderIndex: number;
+}
+
+export interface PracticeItem {
+  gradedItemId: string;
+  submissionGuidelines: string;
+  maxScore: number;
+  attempts: PracticeAttempt[];
+}
+
+export interface PracticeAttempt {
+  gradedAttemptId: string;
+  attemptNumber: number;
+  status: number;
+  submittedAt?: string;
+  score?: number;
+  isPassed: boolean;
+  submittedText?: string;
+  feedback?: string;
 }

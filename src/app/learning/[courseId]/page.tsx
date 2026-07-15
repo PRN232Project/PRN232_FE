@@ -3,7 +3,7 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { useAuth } from '@/context/AuthContext';
-import { Course, LessonItem, GradedAttempt, UserLessonProgress, LessonItemType, studentService } from '@/lib/service';
+import { Course, LessonItem, GradedAttempt, UserLessonProgress, LessonItemType, studentService, courseService } from '@/lib/service';
 import { ArrowLeft, Play, FileText, CheckCircle2, FileDown, GraduationCap, Award, RefreshCw, HelpCircle } from 'lucide-react';
 
 const getYoutubeId = (url: string) => {
@@ -29,6 +29,11 @@ export default function LearningPage() {
   const [answers, setAnswers] = useState<Record<string, string>>({}); // questionId -> answerOptionId
   const [quizAttempt, setQuizAttempt] = useState<GradedAttempt | null>(null);
   const [quizSubmitting, setQuizSubmitting] = useState(false);
+
+  // Practice assignment states
+  const [practiceText, setPracticeText] = useState('');
+  const [practiceAttempt, setPracticeAttempt] = useState<any>(null);
+  const [practiceLoading, setPracticeLoading] = useState(false);
 
   const loadLearningData = async () => {
     if (!user || !courseId) return;
@@ -71,6 +76,51 @@ export default function LearningPage() {
     setSelectedLessonId(lessonId);
     setAnswers({});
     setQuizAttempt(null);
+    setPracticeText('');
+
+    if (item.type === LessonItemType.Practice && item.practice && item.practice.attempts && item.practice.attempts.length > 0) {
+      setPracticeAttempt(item.practice.attempts[0]);
+      setPracticeText(item.practice.attempts[0].submittedText || '');
+    } else {
+      setPracticeAttempt(null);
+    }
+  };
+
+  const handlePracticeSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!user || !selectedItem || !selectedItem.practice || !course) return;
+
+    if (!practiceText.trim()) {
+      alert('Vui lòng nhập bài làm của bạn!');
+      return;
+    }
+
+    setPracticeLoading(true);
+    try {
+      const aiResult = await courseService.gradePracticeWithAI(
+        practiceText,
+        selectedItem.practice.submissionGuidelines
+      );
+
+      const attempt = await courseService.submitPracticeAttempt({
+        lessonItemId: selectedItem.lessonItemId,
+        submittedText: practiceText,
+        score: aiResult.score,
+        feedback: aiResult.feedback,
+        isPassed: aiResult.isPassed
+      });
+
+      setPracticeAttempt(attempt);
+
+      const prog = await studentService.getProgress(user.userId, course.courseId);
+      setProgressList(prog);
+
+      alert(`Bài làm của bạn đã được AI chấm điểm: ${aiResult.score} điểm - ${aiResult.isPassed ? 'ĐẠT YÊU CẦU' : 'CHƯA ĐẠT'}`);
+    } catch (err: any) {
+      alert(err.message || 'Lỗi khi nộp và chấm điểm bài tập');
+    } finally {
+      setPracticeLoading(false);
+    }
   };
 
   const handleMarkComplete = async () => {
@@ -364,6 +414,96 @@ export default function LearningPage() {
                 </div>
               )}
 
+              {selectedItem.type === LessonItemType.Practice && selectedItem.practice && (
+                <div className="rounded-2xl bg-zinc-900/50 p-6 md:p-8 border border-zinc-800/80 shadow-xl space-y-6">
+                  <div className="flex items-center gap-2 pb-4 border-b border-zinc-800">
+                    <Award className="h-5.5 w-5.5 text-pink-500" />
+                    <h2 className="text-base sm:text-lg font-black text-white">Bài tập thực hành: {selectedItem.title}</h2>
+                  </div>
+
+                  {/* Assignment prompt/instructions */}
+                  <div className="bg-zinc-950/60 border border-zinc-850 p-5 rounded-2xl space-y-2">
+                    <h3 className="text-xs font-bold text-zinc-400 uppercase tracking-wider">Yêu cầu đề bài</h3>
+                    <p className="text-xs sm:text-sm text-zinc-250 leading-relaxed whitespace-pre-wrap font-sans bg-zinc-950 p-4 rounded-xl border border-zinc-900">
+                      {selectedItem.practice.submissionGuidelines}
+                    </p>
+                  </div>
+
+                  {/* Submission and AI Grading Results */}
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    
+                    {/* Submission text box */}
+                    <form onSubmit={handlePracticeSubmit} className="space-y-4">
+                      <div className="space-y-1.5">
+                        <label className="text-[10px] font-bold text-zinc-500 uppercase tracking-wider block">Bài làm của bạn</label>
+                        <textarea
+                          rows={12}
+                          value={practiceText}
+                          onChange={(e) => setPracticeText(e.target.value)}
+                          placeholder="Nhập lời giải, câu trả lời tự luận hoặc mã nguồn của bạn vào đây..."
+                          className="w-full rounded-2xl border border-zinc-800 bg-zinc-950/60 p-4 text-xs sm:text-sm text-zinc-200 placeholder-zinc-700 focus:border-indigo-500 focus:outline-none focus:ring-4 focus:ring-indigo-500/10 transition-all font-mono"
+                          disabled={practiceLoading}
+                        />
+                      </div>
+
+                      <button
+                        type="submit"
+                        disabled={practiceLoading || !practiceText.trim()}
+                        className="rounded-xl bg-gradient-to-r from-pink-600 to-indigo-600 hover:opacity-95 disabled:bg-zinc-850 disabled:text-zinc-650 py-3.5 px-6 text-xs font-bold text-white shadow-lg hover:shadow-indigo-500/10 active:scale-95 transition-all cursor-pointer block w-full text-center"
+                      >
+                        {practiceLoading ? 'AI Đang Chấm Bài & Phân Tích...' : 'Nộp bài & AI chấm điểm'}
+                      </button>
+                    </form>
+
+                    {/* AI Feedback */}
+                    <div className="bg-zinc-950/40 border border-zinc-850 p-5 rounded-2xl flex flex-col min-h-[300px]">
+                      <h3 className="text-[10px] font-bold text-zinc-500 uppercase tracking-wider mb-4 block">Kết quả đánh giá từ AI</h3>
+                      
+                      {practiceAttempt ? (
+                        <div className="space-y-4 flex-1 flex flex-col">
+                          
+                          {/* Score and status badge */}
+                          <div className="flex items-center justify-between bg-zinc-950 p-4 rounded-xl border border-zinc-900 shrink-0">
+                            <div>
+                              <span className="text-[9px] text-zinc-500 font-bold uppercase tracking-wider block">Điểm số</span>
+                              <span className="text-xl font-black text-white">{practiceAttempt.score} / 100</span>
+                            </div>
+                            <span className={`px-2.5 py-1 rounded-lg text-[10px] font-bold border ${
+                              practiceAttempt.isPassed 
+                                ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/25' 
+                                : 'bg-red-500/10 text-red-400 border-red-500/25'
+                            }`}>
+                              {practiceAttempt.isPassed ? 'ĐẠT YÊU CẦU' : 'CHƯA ĐẠT'}
+                            </span>
+                          </div>
+
+                          {/* AI detailed comments */}
+                          <div className="flex-1 space-y-2 overflow-y-auto max-h-[250px] pr-2">
+                            <span className="text-[9px] text-zinc-500 font-bold uppercase tracking-wider block">Nhận xét chi tiết</span>
+                            <div className="text-xs text-zinc-300 leading-relaxed whitespace-pre-wrap bg-zinc-950/60 p-3.5 rounded-xl border border-zinc-900 font-sans">
+                              {practiceAttempt.feedback}
+                            </div>
+                          </div>
+                        </div>
+                      ) : (
+                        <div className="flex-1 flex flex-col items-center justify-center text-center p-6 space-y-3">
+                          <div className="flex h-12 w-12 items-center justify-center rounded-full bg-zinc-900 border border-zinc-850 text-zinc-650 shrink-0">
+                            <HelpCircle className="h-6 w-6" />
+                          </div>
+                          <div>
+                            <h4 className="text-xs font-bold text-zinc-300">Chưa nộp bài</h4>
+                            <p className="text-[11px] text-zinc-500 max-w-[200px] mt-1 leading-normal">
+                              Hãy nhập bài làm của bạn bên cột trái và bấm gửi để nhận kết quả phân tích & chấm điểm từ AI.
+                            </p>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+
+                  </div>
+                </div>
+              )}
+
               {/* Lesson resources & Mark complete control */}
               <div className="border-t border-zinc-800/80 pt-6 mt-auto flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
                 
@@ -389,7 +529,7 @@ export default function LearningPage() {
                 </div>
 
                 {/* Mark as complete (for videos & articles) */}
-                {selectedItem.type !== LessonItemType.Quiz && (
+                {selectedItem.type !== LessonItemType.Quiz && selectedItem.type !== LessonItemType.Practice && (
                   <button
                     onClick={handleMarkComplete}
                     disabled={isLessonCompleted(selectedLessonId)}
@@ -451,6 +591,8 @@ export default function LearningPage() {
                                   return <Play className="h-3.5 w-3.5 text-indigo-400" />;
                                 case LessonItemType.Quiz:
                                   return <HelpCircle className="h-3.5 w-3.5 text-amber-500" />;
+                                case LessonItemType.Practice:
+                                  return <Award className="h-3.5 w-3.5 text-pink-400" />;
                                 default:
                                   return <FileText className="h-3.5 w-3.5 text-emerald-400" />;
                               }

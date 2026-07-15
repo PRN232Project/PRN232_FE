@@ -365,6 +365,21 @@ export const studentService = {
                     orderIndex: ao.orderIndex
                   }))
                 }))
+              } : undefined,
+              practice: li.practice ? {
+                gradedItemId: li.practice.gradedItemId,
+                submissionGuidelines: li.practice.submissionGuidelines || '',
+                maxScore: li.practice.maxScore || 100,
+                attempts: (li.practice.attempts || []).map((a: any) => ({
+                  gradedAttemptId: a.gradedAttemptId,
+                  attemptNumber: a.attemptNumber,
+                  status: a.status,
+                  submittedAt: a.submittedAt,
+                  score: a.score,
+                  isPassed: a.isPassed,
+                  submittedText: a.submittedText,
+                  feedback: a.feedback
+                }))
               } : undefined
             }))
           }))

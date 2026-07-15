@@ -287,6 +287,12 @@ export const instructorService = {
                       }))
                     }))
                   });
+                } else if (item.type === 3 && item.practice) { // Practice
+                  await apiClient.post<any>(`/instructor/lessons/${currentLessonId}/items/writing`, {
+                    title: item.title,
+                    prompt: item.practice.submissionGuidelines || 'Nhập lời giải bài tập thực hành của bạn.',
+                    orderIndex: item.orderIndex || 1
+                  });
                 }
               }
             }

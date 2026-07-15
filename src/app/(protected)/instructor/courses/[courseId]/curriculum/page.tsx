@@ -34,7 +34,8 @@ import {
   HelpCircle,
   Loader2,
   FileDown,
-  Sparkles
+  Sparkles,
+  Award
 } from 'lucide-react';
 
 export default function CurriculumBuilderPage() {
@@ -61,7 +62,7 @@ export default function CurriculumBuilderPage() {
 
   // Slide Sheet Sidebar states
   const [sheetOpen, setSheetOpen] = useState(false);
-  const [selectedType, setSelectedType] = useState<'video' | 'reading' | 'quiz' | ''>('');
+  const [selectedType, setSelectedType] = useState<'video' | 'reading' | 'quiz' | 'practice' | ''>('');
   const [selectedLessonId, setSelectedLessonId] = useState<string>('');
 
   // Material Form states
@@ -201,7 +202,7 @@ export default function CurriculumBuilderPage() {
   };
 
   // Open Add Material Slide Panel
-  const openMaterialSheet = (lessonId: string, type: 'video' | 'reading' | 'quiz') => {
+  const openMaterialSheet = (lessonId: string, type: 'video' | 'reading' | 'quiz' | 'practice') => {
     setSelectedLessonId(lessonId);
     setSelectedType(type);
     setMaterialTitle('');
@@ -371,6 +372,21 @@ export default function CurriculumBuilderPage() {
         durationMinutes: 10,
         orderIndex: 0,
         content: readingContent.trim()
+      };
+    } else if (selectedType === 'practice') {
+      newItem = {
+        lessonItemId: `item-practice-${Math.random().toString(36).substring(2, 9)}`,
+        lessonId: selectedLessonId,
+        title: materialTitle.trim(),
+        type: LessonItemType.Practice,
+        durationMinutes: 30,
+        orderIndex: 0,
+        practice: {
+          gradedItemId: `g-item-${Math.random().toString(36).substring(2, 9)}`,
+          submissionGuidelines: readingContent.trim(),
+          maxScore: 100,
+          attempts: []
+        }
       };
     } else {
       // Quiz
@@ -648,6 +664,12 @@ export default function CurriculumBuilderPage() {
                                     >
                                       + Trắc nghiệm
                                     </button>
+                                    <button
+                                      onClick={() => openMaterialSheet(lesson.lessonId, 'practice')}
+                                      className="px-2 py-1 text-[10px] font-bold text-indigo-700 hover:bg-indigo-100 rounded transition-colors cursor-pointer"
+                                    >
+                                      + Thực hành
+                                    </button>
                                   </div>
 
                                   <button
@@ -682,12 +704,16 @@ export default function CurriculumBuilderPage() {
                                                 ? 'bg-red-50 text-red-500 border border-red-100' 
                                                 : item.type === LessonItemType.Article
                                                 ? 'bg-blue-50 text-blue-500 border border-blue-100'
+                                                : item.type === LessonItemType.Practice
+                                                ? 'bg-pink-50 text-pink-500 border border-pink-100'
                                                 : 'bg-amber-50 text-amber-500 border border-amber-100'
                                             }`}>
                                               {item.type === LessonItemType.Video ? (
                                                 <Play className="h-4 w-4" />
                                               ) : item.type === LessonItemType.Article ? (
                                                 <FileText className="h-4 w-4" />
+                                              ) : item.type === LessonItemType.Practice ? (
+                                                <Award className="h-4 w-4" />
                                               ) : (
                                                 <HelpCircle className="h-4 w-4" />
                                               )}
@@ -696,7 +722,13 @@ export default function CurriculumBuilderPage() {
                                               <span className="text-xs font-bold text-zinc-800">{item.title}</span>
                                               <div className="flex items-center gap-2 text-[10px] text-zinc-500 mt-0.5">
                                                 <span className="font-semibold uppercase text-zinc-500">
-                                                  {item.type === LessonItemType.Video ? 'Video bài giảng' : item.type === LessonItemType.Article ? 'Bài viết tự học' : 'Bài trắc nghiệm'}
+                                                  {item.type === LessonItemType.Video 
+                                                    ? 'Video bài giảng' 
+                                                    : item.type === LessonItemType.Article 
+                                                    ? 'Bài viết tự học' 
+                                                    : item.type === LessonItemType.Practice
+                                                    ? 'Bài tập thực hành'
+                                                    : 'Bài trắc nghiệm'}
                                                 </span>
                                                 <span>•</span>
                                                 <span>Thứ tự: {item.orderIndex}</span>
@@ -842,22 +874,36 @@ export default function CurriculumBuilderPage() {
               <div className="px-6 py-5 bg-zinc-50 border-b border-zinc-200 flex items-center justify-between sticky top-0 z-10">
                 <div className="flex items-center gap-3">
                   <div className={`w-9 h-9 rounded-lg flex items-center justify-center text-white ${
-                    selectedType === 'video' ? 'bg-red-500' : selectedType === 'reading' ? 'bg-blue-500' : 'bg-amber-500'
+                    selectedType === 'video' ? 'bg-red-500' : selectedType === 'reading' ? 'bg-blue-500' : selectedType === 'practice' ? 'bg-pink-500' : 'bg-amber-500'
                   }`}>
                     {selectedType === 'video' ? (
                       <Play className="h-4.5 w-4.5" />
                     ) : selectedType === 'reading' ? (
                       <FileText className="h-4.5 w-4.5" />
+                    ) : selectedType === 'practice' ? (
+                      <Award className="h-4.5 w-4.5" />
                     ) : (
                       <HelpCircle className="h-4.5 w-4.5" />
                     )}
                   </div>
                   <div>
                     <h2 className="text-sm font-bold text-zinc-900">
-                      {selectedType === 'video' ? 'Thêm bài giảng Video' : selectedType === 'reading' ? 'Thêm bài viết tự học' : 'Tạo bài trắc nghiệm mới'}
+                      {selectedType === 'video' 
+                        ? 'Thêm bài giảng Video' 
+                        : selectedType === 'reading' 
+                        ? 'Thêm bài viết tự học' 
+                        : selectedType === 'practice'
+                        ? 'Tạo bài tập thực hành AI'
+                        : 'Tạo bài trắc nghiệm mới'}
                     </h2>
                     <p className="text-[10px] text-zinc-500 mt-0.5">
-                      {selectedType === 'video' ? 'Tải lên video bài giảng chất lượng cao.' : selectedType === 'reading' ? 'Biên soạn nội dung lý thuyết cho bài học.' : 'Thiết lập câu hỏi ôn tập củng cố kiến thức.'}
+                      {selectedType === 'video' 
+                        ? 'Tải lên video bài giảng chất lượng cao.' 
+                        : selectedType === 'reading' 
+                        ? 'Biên soạn nội dung lý thuyết cho bài học.' 
+                        : selectedType === 'practice'
+                        ? 'Nhập yêu cầu đề bài và tiêu chí chấm điểm, AI sẽ tự động chấm bài làm của học viên.'
+                        : 'Thiết lập câu hỏi ôn tập củng cố kiến thức.'}
                     </p>
                   </div>
                 </div>
@@ -975,6 +1021,50 @@ export default function CurriculumBuilderPage() {
                         className="w-full py-3.5 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-xs font-bold shadow-lg transition-all flex items-center justify-center gap-1.5 cursor-pointer"
                       >
                         Lưu bài viết tự học
+                      </button>
+                    </div>
+                  </form>
+                )}
+
+                {/* PRACTICE FORM */}
+                {selectedType === 'practice' && (
+                  <form onSubmit={handleSaveMaterial} className="space-y-5">
+                    <div>
+                      <label className="block text-xs font-bold text-zinc-700 mb-1.5">Tiêu đề bài thực hành</label>
+                      <input
+                        type="text"
+                        required
+                        value={materialTitle}
+                        onChange={(e) => setMaterialTitle(e.target.value)}
+                        placeholder="Ví dụ: Bài tập thực hành code JavaScript cơ bản..."
+                        className="w-full text-xs rounded-lg border border-zinc-300 px-3.5 py-2.5 outline-none placeholder:text-zinc-400 focus:border-indigo-500 font-semibold text-zinc-950 bg-white"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-xs font-bold text-zinc-700 mb-1.5">Yêu cầu đề bài & Hướng dẫn chấm điểm (Guidelines)</label>
+                      <textarea
+                        required
+                        rows={12}
+                        value={readingContent}
+                        onChange={(e) => setReadingContent(e.target.value)}
+                        placeholder={`Ví dụ đề bài:
+Đề bài: Hãy viết một hàm sum(a, b) bằng JavaScript trả về tổng của 2 số.
+
+Yêu cầu chấm điểm:
+1. Tên hàm phải là sum.
+2. Hàm phải nhận vào 2 tham số.
+3. Hàm phải trả về giá trị tổng chính xác.`}
+                        className="w-full text-xs rounded-lg border border-zinc-300 p-4 outline-none placeholder:text-zinc-400 focus:border-indigo-500 resize-y leading-relaxed font-mono text-zinc-950 bg-white"
+                      />
+                    </div>
+
+                    <div className="pt-6 border-t border-zinc-200">
+                      <button
+                        type="submit"
+                        className="w-full py-3.5 bg-pink-600 hover:bg-pink-700 text-white rounded-xl text-xs font-bold shadow-lg transition-all flex items-center justify-center gap-1.5 cursor-pointer"
+                      >
+                        Lưu bài tập thực hành
                       </button>
                     </div>
                   </form>
