@@ -34,6 +34,7 @@ export default function LearningPage() {
   const [practiceText, setPracticeText] = useState('');
   const [practiceAttempt, setPracticeAttempt] = useState<any>(null);
   const [practiceLoading, setPracticeLoading] = useState(false);
+  const [initialProgressLoaded, setInitialProgressLoaded] = useState(false);
 
   const loadLearningData = async () => {
     if (!user || !courseId) return;
@@ -43,6 +44,7 @@ export default function LearningPage() {
 
       const prog = await studentService.getProgress(user.userId, courseId);
       setProgressList(prog);
+      setInitialProgressLoaded(true);
 
       // Select first lesson item by default
       if (courseData.modules && courseData.modules.length > 0) {
@@ -70,6 +72,18 @@ export default function LearningPage() {
     }
     loadLearningData();
   }, [courseId, user, authLoading]);
+
+  // Auto-redirect to certificates page when progress reaches 100% in-session
+  useEffect(() => {
+    if (!initialProgressLoaded || !course || progressList.length === 0) return;
+
+    const total = course.modules?.reduce((acc, m) => acc + (m.lessons?.length || 0), 0) || 0;
+    const completed = progressList.filter((p) => p.isCompleted).length;
+
+    if (total > 0 && completed === total) {
+      router.push(`/certificates?courseId=${course.courseId}`);
+    }
+  }, [progressList, course, initialProgressLoaded, router]);
 
   const handleSelectLessonItem = (item: LessonItem, lessonId: string) => {
     setSelectedItem(item);

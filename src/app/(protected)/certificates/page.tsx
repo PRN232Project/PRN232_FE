@@ -2,11 +2,14 @@
 
 import React, { useEffect, useState } from 'react';
 import { useAuth } from '@/context/AuthContext';
+import { useSearchParams } from 'next/navigation';
 import { Certificate, studentService } from '@/lib/service';
 import { Award, Printer, X } from 'lucide-react';
 
 export default function CertificatesPage() {
   const { user } = useAuth();
+  const searchParams = useSearchParams();
+  const courseIdParam = searchParams.get('courseId');
   const [certificates, setCertificates] = useState<Certificate[]>([]);
   const [loading, setLoading] = useState(true);
   const [activeCert, setActiveCert] = useState<Certificate | null>(null);
@@ -17,6 +20,12 @@ export default function CertificatesPage() {
       try {
         const data = await studentService.getCertificates(user.userId);
         setCertificates(data);
+        if (courseIdParam) {
+          const match = data.find(c => c.courseId === courseIdParam);
+          if (match) {
+            setActiveCert(match);
+          }
+        }
       } catch (err) {
         console.error(err);
       } finally {
@@ -24,7 +33,7 @@ export default function CertificatesPage() {
       }
     };
     loadCertificates();
-  }, [user]);
+  }, [user, courseIdParam]);
 
   const handlePrint = () => {
     if (typeof window !== 'undefined') {
