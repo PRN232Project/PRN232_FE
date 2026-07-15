@@ -72,7 +72,9 @@ export const adminService = {
         topCoursesByRevenue: overview.topCoursesByRevenue || [],
         topInstructorsByRevenue: overview.topInstructorsByRevenue || [],
         topCoursesByEnrollment: overview.topCoursesByEnrollment || [],
-        topInstructorsByEnrollment: overview.topInstructorsByEnrollment || []
+        topInstructorsByEnrollment: overview.topInstructorsByEnrollment || [],
+        topStudentsBySpending: overview.topStudentsBySpending || [],
+        topStudentsByEnrollment: overview.topStudentsByEnrollment || []
       };
     }
   },

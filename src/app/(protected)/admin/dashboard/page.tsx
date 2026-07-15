@@ -495,6 +495,86 @@ export default function AdminDashboard() {
             </div>
           </div>
         </div>
+
+        {/* Top Students by Spending (Mua khóa học nhiều nhất) */}
+        <div className="rounded-2xl border border-zinc-200 bg-white p-6 shadow-sm flex flex-col justify-between">
+          <div>
+            <h2 className="text-sm font-bold text-zinc-900 mb-4 flex items-center gap-2 border-b border-zinc-100 pb-3">
+              <DollarSign className="h-4.5 w-4.5 text-rose-500" /> Học viên mua nhiều nhất (Top 5)
+            </h2>
+            <div className="overflow-x-auto">
+              {stats?.topStudentsBySpending && stats.topStudentsBySpending.length > 0 ? (
+                <table className="w-full text-left text-xs font-semibold text-zinc-500">
+                  <thead>
+                    <tr className="border-b border-zinc-100 text-zinc-400 font-bold uppercase tracking-wider text-[9px]">
+                      <th className="pb-3">Học viên</th>
+                      <th className="pb-3 text-center">Số khóa mua</th>
+                      <th className="pb-3 text-right">Đã thanh toán</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-zinc-100">
+                    {stats.topStudentsBySpending.map((s, idx) => (
+                      <tr key={idx} className="hover:bg-zinc-50/50">
+                        <td className="py-3">
+                          <p className="font-bold text-zinc-800">{s.fullName}</p>
+                          <p className="text-[10px] text-zinc-400 font-semibold">{s.email}</p>
+                        </td>
+                        <td className="py-3 text-center font-bold text-zinc-900">
+                          {s.courseCount}
+                        </td>
+                        <td className="py-3 text-right font-black text-rose-500">
+                          {formatVND(s.totalSpent)}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              ) : (
+                <div className="py-8 text-center text-zinc-400 text-xs font-semibold">Chưa có số liệu mua khóa học của học viên.</div>
+              )}
+            </div>
+          </div>
+        </div>
+
+        {/* Top Students by Enrollment (Join khóa học nhiều nhất) */}
+        <div className="rounded-2xl border border-zinc-200 bg-white p-6 shadow-sm flex flex-col justify-between">
+          <div>
+            <h2 className="text-sm font-bold text-zinc-900 mb-4 flex items-center gap-2 border-b border-zinc-100 pb-3">
+              <Users className="h-4.5 w-4.5 text-violet-500" /> Học viên tham gia nhiều nhất (Top 5)
+            </h2>
+            <div className="overflow-x-auto">
+              {stats?.topStudentsByEnrollment && stats.topStudentsByEnrollment.length > 0 ? (
+                <table className="w-full text-left text-xs font-semibold text-zinc-500">
+                  <thead>
+                    <tr className="border-b border-zinc-100 text-zinc-400 font-bold uppercase tracking-wider text-[9px]">
+                      <th className="pb-3">Học viên</th>
+                      <th className="pb-3 text-center">Số khóa tham gia</th>
+                      <th className="pb-3 text-right">Tổng chi tiêu</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-zinc-100">
+                    {stats.topStudentsByEnrollment.map((s, idx) => (
+                      <tr key={idx} className="hover:bg-zinc-50/50">
+                        <td className="py-3">
+                          <p className="font-bold text-zinc-800">{s.fullName}</p>
+                          <p className="text-[10px] text-zinc-400 font-semibold">{s.email}</p>
+                        </td>
+                        <td className="py-3 text-center font-black text-violet-600">
+                          {s.courseCount}
+                        </td>
+                        <td className="py-3 text-right font-bold text-zinc-900">
+                          {formatVND(s.totalSpent)}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              ) : (
+                <div className="py-8 text-center text-zinc-400 text-xs font-semibold">Chưa có số liệu tham gia khóa học của học viên.</div>
+              )}
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   );

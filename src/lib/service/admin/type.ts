@@ -14,4 +14,6 @@ export interface AdminStats {
   topInstructorsByRevenue?: { instructorId: string; instructorName: string; studentCount: number; revenue: number }[];
   topCoursesByEnrollment?: { courseId: string; title: string; enrollCount: number; revenue: number }[];
   topInstructorsByEnrollment?: { instructorId: string; instructorName: string; studentCount: number; revenue: number }[];
+  topStudentsBySpending?: { userId: string; fullName: string; email: string; courseCount: number; totalSpent: number }[];
+  topStudentsByEnrollment?: { userId: string; fullName: string; email: string; courseCount: number; totalSpent: number }[];
 }
