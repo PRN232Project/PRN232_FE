@@ -10,6 +10,7 @@ export default function AdminDashboard() {
   const [stats, setStats] = useState<AdminStats | null>(null);
   const [loading, setLoading] = useState(true);
   const [mounted, setMounted] = useState(false);
+  const [paySortOrder, setPaySortOrder] = useState<'desc' | 'asc'>('desc');
 
   useEffect(() => {
     setMounted(true);
@@ -60,6 +61,14 @@ export default function AdminDashboard() {
   const formatVND = (num: number) => {
     return num.toLocaleString('vi-VN') + ' đ';
   };
+
+  const sortedPayments = stats?.recentPayments
+    ? [...stats.recentPayments].sort((a: any, b: any) => {
+        const timeA = new Date(a.createdAt || 0).getTime();
+        const timeB = new Date(b.createdAt || 0).getTime();
+        return paySortOrder === 'desc' ? timeB - timeA : timeA - timeB;
+      })
+    : [];
 
   const COLORS = ['#3b82f6', '#818cf8', '#34d399'];
 
@@ -279,18 +288,27 @@ export default function AdminDashboard() {
               <Landmark className="h-4.5 w-4.5 text-zinc-400" /> Giao dịch gần đây
             </h2>
             <div className="overflow-x-auto">
-              {stats?.recentPayments && stats.recentPayments.length > 0 ? (
+              {sortedPayments && sortedPayments.length > 0 ? (
                 <table className="w-full text-left text-xs font-semibold text-zinc-500">
                   <thead>
                     <tr className="border-b border-zinc-100 text-zinc-400 font-bold uppercase tracking-wider text-[9px]">
                       <th className="pb-3">Học viên</th>
                       <th className="pb-3">Khóa học</th>
+                      <th className="pb-3">
+                        <button
+                          type="button"
+                          onClick={() => setPaySortOrder(paySortOrder === 'desc' ? 'asc' : 'desc')}
+                          className="flex items-center gap-1 hover:text-zinc-700 transition-colors uppercase font-bold focus:outline-none"
+                        >
+                          Ngày {paySortOrder === 'desc' ? '▼' : '▲'}
+                        </button>
+                      </th>
                       <th className="pb-3 text-right">Số tiền</th>
                       <th className="pb-3 text-center">Trạng thái</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-zinc-100">
-                    {stats.recentPayments.slice(0, 5).map((pay: any, idx: number) => (
+                    {sortedPayments.slice(0, 5).map((pay: any, idx: number) => (
                       <tr key={idx} className="hover:bg-zinc-50/50">
                         <td className="py-3">
                           <p className="font-bold text-zinc-800 line-clamp-1">{pay.studentName || 'Học viên'}</p>
@@ -298,6 +316,9 @@ export default function AdminDashboard() {
                         </td>
                         <td className="py-3 max-w-[200px] truncate text-zinc-700 font-medium">
                           {pay.courseTitle}
+                        </td>
+                        <td className="py-3 text-[10px] text-zinc-500 font-semibold">
+                          {pay.createdAt ? new Date(pay.createdAt).toLocaleString('vi-VN') : '---'}
                         </td>
                         <td className="py-3 text-right font-bold text-zinc-950">
                           {formatVND(pay.amount)}
@@ -311,6 +332,165 @@ export default function AdminDashboard() {
                 </table>
               ) : (
                 <div className="py-12 text-center text-zinc-400 text-xs font-semibold">Chưa có giao dịch mua khóa học nào trên hệ thống.</div>
+              )}
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Analytics Rankings Grid */}
+      <div className="grid grid-cols-1 gap-8 lg:grid-cols-2">
+        {/* Top Courses by Revenue */}
+        <div className="rounded-2xl border border-zinc-200 bg-white p-6 shadow-sm flex flex-col justify-between">
+          <div>
+            <h2 className="text-sm font-bold text-zinc-900 mb-4 flex items-center gap-2 border-b border-zinc-100 pb-3">
+              <DollarSign className="h-4.5 w-4.5 text-blue-600" /> Khóa học doanh thu cao nhất (Top 5)
+            </h2>
+            <div className="overflow-x-auto">
+              {stats?.topCoursesByRevenue && stats.topCoursesByRevenue.length > 0 ? (
+                <table className="w-full text-left text-xs font-semibold text-zinc-500">
+                  <thead>
+                    <tr className="border-b border-zinc-100 text-zinc-400 font-bold uppercase tracking-wider text-[9px]">
+                      <th className="pb-3">Khóa học</th>
+                      <th className="pb-3 text-center">Số học viên</th>
+                      <th className="pb-3 text-right">Doanh thu</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-zinc-100">
+                    {stats.topCoursesByRevenue.map((c, idx) => (
+                      <tr key={idx} className="hover:bg-zinc-50/50">
+                        <td className="py-3 font-bold text-zinc-800 line-clamp-1 max-w-[200px]" title={c.title}>
+                          {c.title}
+                        </td>
+                        <td className="py-3 text-center font-bold text-zinc-900">
+                          {c.enrollCount}
+                        </td>
+                        <td className="py-3 text-right font-black text-blue-600">
+                          {formatVND(c.revenue)}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              ) : (
+                <div className="py-8 text-center text-zinc-400 text-xs font-semibold">Chưa có số liệu doanh thu khóa học.</div>
+              )}
+            </div>
+          </div>
+        </div>
+
+        {/* Top Instructors by Revenue */}
+        <div className="rounded-2xl border border-zinc-200 bg-white p-6 shadow-sm flex flex-col justify-between">
+          <div>
+            <h2 className="text-sm font-bold text-zinc-900 mb-4 flex items-center gap-2 border-b border-zinc-100 pb-3">
+              <Landmark className="h-4.5 w-4.5 text-indigo-600" /> Giảng viên thu nhập cao nhất (Top 5)
+            </h2>
+            <div className="overflow-x-auto">
+              {stats?.topInstructorsByRevenue && stats.topInstructorsByRevenue.length > 0 ? (
+                <table className="w-full text-left text-xs font-semibold text-zinc-500">
+                  <thead>
+                    <tr className="border-b border-zinc-100 text-zinc-400 font-bold uppercase tracking-wider text-[9px]">
+                      <th className="pb-3">Giảng viên</th>
+                      <th className="pb-3 text-center">Số học viên</th>
+                      <th className="pb-3 text-right">Doanh thu</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-zinc-100">
+                    {stats.topInstructorsByRevenue.map((inst, idx) => (
+                      <tr key={idx} className="hover:bg-zinc-50/50">
+                        <td className="py-3 font-bold text-zinc-800">
+                          {inst.instructorName}
+                        </td>
+                        <td className="py-3 text-center font-bold text-zinc-900">
+                          {inst.studentCount}
+                        </td>
+                        <td className="py-3 text-right font-black text-indigo-600">
+                          {formatVND(inst.revenue)}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              ) : (
+                <div className="py-8 text-center text-zinc-400 text-xs font-semibold">Chưa có số liệu thu nhập giảng viên.</div>
+              )}
+            </div>
+          </div>
+        </div>
+
+        {/* Top Courses by Enrollment (Bán chạy nhất) */}
+        <div className="rounded-2xl border border-zinc-200 bg-white p-6 shadow-sm flex flex-col justify-between">
+          <div>
+            <h2 className="text-sm font-bold text-zinc-900 mb-4 flex items-center gap-2 border-b border-zinc-100 pb-3">
+              <Award className="h-4.5 w-4.5 text-emerald-600" /> Khóa học bán chạy nhất (Top 5)
+            </h2>
+            <div className="overflow-x-auto">
+              {stats?.topCoursesByEnrollment && stats.topCoursesByEnrollment.length > 0 ? (
+                <table className="w-full text-left text-xs font-semibold text-zinc-500">
+                  <thead>
+                    <tr className="border-b border-zinc-100 text-zinc-400 font-bold uppercase tracking-wider text-[9px]">
+                      <th className="pb-3">Khóa học</th>
+                      <th className="pb-3 text-center">Số lượt đăng ký</th>
+                      <th className="pb-3 text-right">Doanh thu</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-zinc-100">
+                    {stats.topCoursesByEnrollment.map((c, idx) => (
+                      <tr key={idx} className="hover:bg-zinc-50/50">
+                        <td className="py-3 font-bold text-zinc-800 line-clamp-1 max-w-[200px]" title={c.title}>
+                          {c.title}
+                        </td>
+                        <td className="py-3 text-center font-black text-emerald-600">
+                          {c.enrollCount}
+                        </td>
+                        <td className="py-3 text-right font-bold text-zinc-900">
+                          {formatVND(c.revenue)}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              ) : (
+                <div className="py-8 text-center text-zinc-400 text-xs font-semibold">Chưa có số liệu ghi danh khóa học.</div>
+              )}
+            </div>
+          </div>
+        </div>
+
+        {/* Top Instructors by Enrollment (Xuất sắc nhất) */}
+        <div className="rounded-2xl border border-zinc-200 bg-white p-6 shadow-sm flex flex-col justify-between">
+          <div>
+            <h2 className="text-sm font-bold text-zinc-900 mb-4 flex items-center gap-2 border-b border-zinc-100 pb-3">
+              <Users className="h-4.5 w-4.5 text-amber-500" /> Giảng viên xuất sắc nhất (Top 5)
+            </h2>
+            <div className="overflow-x-auto">
+              {stats?.topInstructorsByEnrollment && stats.topInstructorsByEnrollment.length > 0 ? (
+                <table className="w-full text-left text-xs font-semibold text-zinc-500">
+                  <thead>
+                    <tr className="border-b border-zinc-100 text-zinc-400 font-bold uppercase tracking-wider text-[9px]">
+                      <th className="pb-3">Giảng viên</th>
+                      <th className="pb-3 text-center">Tổng học viên</th>
+                      <th className="pb-3 text-right">Tổng doanh thu</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-zinc-100">
+                    {stats.topInstructorsByEnrollment.map((inst, idx) => (
+                      <tr key={idx} className="hover:bg-zinc-50/50">
+                        <td className="py-3 font-bold text-zinc-800">
+                          {inst.instructorName}
+                        </td>
+                        <td className="py-3 text-center font-black text-amber-600">
+                          {inst.studentCount}
+                        </td>
+                        <td className="py-3 text-right font-bold text-zinc-900">
+                          {formatVND(inst.revenue)}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              ) : (
+                <div className="py-8 text-center text-zinc-400 text-xs font-semibold">Chưa có số liệu tổng hợp học viên giảng viên.</div>
               )}
             </div>
           </div>

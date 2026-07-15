@@ -12,6 +12,7 @@ export default function InstructorWallet() {
   const [transactions, setTransactions] = useState<WalletTransaction[]>([]);
   const [loading, setLoading] = useState(true);
   const [actionLoading, setActionLoading] = useState(false);
+  const [walletSortOrder, setWalletSortOrder] = useState<'desc' | 'asc'>('desc');
 
   const [amount, setAmount] = useState('');
   const [bankName, setBankName] = useState('Vietcombank');
@@ -198,35 +199,52 @@ export default function InstructorWallet() {
         </div>
 
         <div className="lg:col-span-2 rounded-xl border border-zinc-200 bg-white p-6 shadow-sm flex flex-col">
-          <h3 className="text-sm font-bold text-zinc-950 border-b border-zinc-200 pb-3 mb-4">Lịch sử giao dịch</h3>
+          <div className="flex items-center justify-between border-b border-zinc-200 pb-3 mb-4">
+            <h3 className="text-sm font-bold text-zinc-950">Lịch sử giao dịch</h3>
+            {transactions.length > 0 && (
+              <button
+                type="button"
+                onClick={() => setWalletSortOrder(walletSortOrder === 'desc' ? 'asc' : 'desc')}
+                className="inline-flex items-center gap-1 px-2 py-1 text-[10px] font-bold text-zinc-600 bg-zinc-100 hover:bg-zinc-200 rounded-md border border-zinc-250 transition-colors focus:outline-none"
+              >
+                Ngày {walletSortOrder === 'desc' ? '▼' : '▲'}
+              </button>
+            )}
+          </div>
           
           {transactions.length === 0 ? (
             <div className="text-center py-20 text-zinc-400 text-xs">Chưa có lịch sử giao dịch nào phát sinh.</div>
           ) : (
             <div className="divide-y divide-zinc-200 overflow-y-auto max-h-[500px]">
-              {transactions.map((tx) => (
-                <div key={tx.walletTransactionId} className="py-4 flex items-start justify-between gap-4">
-                  <div className="flex gap-3">
-                    <div className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-lg ${
-                      tx.type === 2 
-                        ? 'bg-green-50 text-green-600 border border-green-100' 
-                        : 'bg-red-50 text-red-500 border border-red-100'
-                    }`}>
-                      {tx.type === 2 ? <ArrowDownLeft className="h-4.5 w-4.5" /> : <ArrowUpRight className="h-4.5 w-4.5" />}
+              {[...transactions]
+                .sort((a, b) => {
+                  const timeA = new Date(a.createdAt || 0).getTime();
+                  const timeB = new Date(b.createdAt || 0).getTime();
+                  return walletSortOrder === 'desc' ? timeB - timeA : timeA - timeB;
+                })
+                .map((tx) => (
+                  <div key={tx.walletTransactionId} className="py-4 flex items-start justify-between gap-4">
+                    <div className="flex gap-3">
+                      <div className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-lg ${
+                        tx.type === 2 
+                          ? 'bg-green-50 text-green-600 border border-green-100' 
+                          : 'bg-red-50 text-red-500 border border-red-100'
+                      }`}>
+                        {tx.type === 2 ? <ArrowDownLeft className="h-4.5 w-4.5" /> : <ArrowUpRight className="h-4.5 w-4.5" />}
+                      </div>
+                      <div>
+                        <p className="text-xs font-semibold text-zinc-800">{tx.description || (tx.type === 2 ? 'Cộng doanh thu' : 'Yêu cầu rút tiền')}</p>
+                        <p className="text-[10px] text-zinc-500 font-semibold mt-1">Giao dịch: {new Date(tx.createdAt).toLocaleString('vi-VN')}</p>
+                      </div>
                     </div>
-                    <div>
-                      <p className="text-xs font-semibold text-zinc-800">{tx.description || (tx.type === 2 ? 'Cộng doanh thu' : 'Yêu cầu rút tiền')}</p>
-                      <p className="text-[10px] text-zinc-500 font-semibold mt-1">Giao dịch: {new Date(tx.createdAt).toLocaleString('vi-VN')}</p>
+                    <div className="text-right shrink-0 flex flex-col items-end gap-1.5">
+                      <span className={`text-xs font-extrabold ${tx.type === 2 ? 'text-green-600' : 'text-red-500'}`}>
+                        {tx.type === 2 ? '+' : '-'}{formatVND(tx.amount)}
+                      </span>
+                      {getStatusBadge(tx.status)}
                     </div>
                   </div>
-                  <div className="text-right shrink-0 flex flex-col items-end gap-1.5">
-                    <span className={`text-xs font-extrabold ${tx.type === 2 ? 'text-green-600' : 'text-red-500'}`}>
-                      {tx.type === 2 ? '+' : '-'}{formatVND(tx.amount)}
-                    </span>
-                    {getStatusBadge(tx.status)}
-                  </div>
-                </div>
-              ))}
+                ))}
             </div>
           )}
         </div>

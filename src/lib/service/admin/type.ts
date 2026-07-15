@@ -10,4 +10,8 @@ export interface AdminStats {
   topInstructorName?: string;
   topInstructorStudents?: number;
   recentPayments?: any[];
+  topCoursesByRevenue?: { courseId: string; title: string; enrollCount: number; revenue: number }[];
+  topInstructorsByRevenue?: { instructorId: string; instructorName: string; studentCount: number; revenue: number }[];
+  topCoursesByEnrollment?: { courseId: string; title: string; enrollCount: number; revenue: number }[];
+  topInstructorsByEnrollment?: { instructorId: string; instructorName: string; studentCount: number; revenue: number }[];
 }

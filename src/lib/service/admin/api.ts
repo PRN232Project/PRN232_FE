@@ -68,7 +68,11 @@ export const adminService = {
         topCourseEnrolls: overview.topCourseEnrolls || undefined,
         topInstructorName: overview.topInstructorName || undefined,
         topInstructorStudents: overview.topInstructorStudents || undefined,
-        recentPayments: overview.recentPayments || []
+        recentPayments: overview.recentPayments || [],
+        topCoursesByRevenue: overview.topCoursesByRevenue || [],
+        topInstructorsByRevenue: overview.topInstructorsByRevenue || [],
+        topCoursesByEnrollment: overview.topCoursesByEnrollment || [],
+        topInstructorsByEnrollment: overview.topInstructorsByEnrollment || []
       };
     }
   },
