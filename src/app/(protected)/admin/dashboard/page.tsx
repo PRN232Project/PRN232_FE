@@ -3,14 +3,16 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import { adminService, AdminStats } from '@/lib/service';
 import { useSignalR } from '@/context/SignalRContext';
-import { DollarSign, Users, Award, BookOpen, TrendingUp, Star, ArrowRight, ShieldCheck, Landmark } from 'lucide-react';
-import { ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip, CartesianGrid, PieChart, Pie, Cell } from 'recharts';
+import { DollarSign, Users, Award, BookOpen, TrendingUp, Star, ArrowRight, ShieldCheck, Landmark, Calendar } from 'lucide-react';
+import { ResponsiveContainer, BarChart, Bar, LineChart, Line, XAxis, YAxis, Tooltip, CartesianGrid, PieChart, Pie, Cell } from 'recharts';
 
 export default function AdminDashboard() {
   const [stats, setStats] = useState<AdminStats | null>(null);
   const [loading, setLoading] = useState(true);
   const [mounted, setMounted] = useState(false);
   const [paySortOrder, setPaySortOrder] = useState<'desc' | 'asc'>('desc');
+  const [fromDate, setFromDate] = useState<string>('');
+  const [toDate, setToDate] = useState<string>('');
 
   useEffect(() => {
     setMounted(true);
@@ -18,9 +20,9 @@ export default function AdminDashboard() {
 
   const { notifHub, notifConnected } = useSignalR();
 
-  const loadStats = useCallback(async () => {
+  const loadStats = useCallback(async (start?: string, end?: string) => {
     try {
-      const data = await adminService.getStats();
+      const data = await adminService.getStats(start, end);
       setStats(data);
     } catch (err) {
       console.error(err);
@@ -28,6 +30,22 @@ export default function AdminDashboard() {
       setLoading(false);
     }
   }, []);
+
+  const handleApplyFilter = () => {
+    if ((fromDate && !toDate) || (!fromDate && toDate)) {
+      alert('Vui lòng chọn đầy đủ cả Từ ngày và Đến ngày');
+      return;
+    }
+    setLoading(true);
+    loadStats(fromDate || undefined, toDate || undefined);
+  };
+
+  const handleResetFilter = () => {
+    setFromDate('');
+    setToDate('');
+    setLoading(true);
+    loadStats();
+  };
 
   useEffect(() => {
     loadStats();
@@ -101,13 +119,75 @@ export default function AdminDashboard() {
       <div className="relative overflow-hidden rounded-3xl bg-zinc-950 p-6 sm:p-8 text-white shadow-xl border border-zinc-800">
         <div className="absolute top-0 right-0 w-64 h-64 bg-blue-500/10 rounded-full blur-[60px] pointer-events-none" />
         <div className="absolute bottom-0 left-20 w-48 h-48 bg-indigo-500/10 rounded-full blur-[60px] pointer-events-none" />
-        <div className="relative z-10 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+        <div className="relative z-10 flex flex-col xl:flex-row items-start xl:items-center justify-between gap-6">
           <div className="space-y-2">
             <span className="inline-flex items-center gap-1 rounded-full bg-blue-500/10 border border-blue-500/20 px-2.5 py-0.5 text-[10px] font-bold text-blue-400 uppercase tracking-wider">
               <ShieldCheck className="h-3.5 w-3.5" /> Quản trị viên
             </span>
             <h1 className="text-2xl sm:text-3xl font-black tracking-tight leading-none">Báo cáo Tổng Quan Hệ Thống</h1>
             <p className="text-zinc-400 text-xs sm:text-sm font-medium">Theo dõi doanh thu, tài khoản và hoạt động kiểm duyệt khóa học thời gian thực.</p>
+          </div>
+
+          {/* Date Range Selector Widget */}
+          <div className="flex flex-wrap items-center gap-3 bg-zinc-900/60 p-3 rounded-2xl border border-zinc-800 backdrop-blur-sm shrink-0 w-full xl:w-auto">
+            <div className="flex items-center gap-2">
+              <div 
+                onClick={(e) => {
+                  const input = e.currentTarget.querySelector('input');
+                  if (input) input.showPicker();
+                }}
+                className="flex items-center gap-2 rounded-lg bg-zinc-950 border border-zinc-800 text-xs px-2.5 py-1.5 font-bold text-white hover:border-zinc-700 transition-colors cursor-pointer select-none"
+              >
+                <Calendar className="h-3.5 w-3.5 text-zinc-400" />
+                <span className="text-[10px] font-bold text-zinc-400 uppercase tracking-wider">Từ:</span>
+                <input
+                  type="date"
+                  value={fromDate}
+                  onChange={(e) => setFromDate(e.target.value)}
+                  onClick={(e) => e.stopPropagation()}
+                  className="bg-transparent text-white focus:outline-none cursor-pointer [color-scheme:dark] font-bold text-xs"
+                />
+              </div>
+            </div>
+
+            <div className="flex items-center gap-2">
+              <div 
+                onClick={(e) => {
+                  const input = e.currentTarget.querySelector('input');
+                  if (input) input.showPicker();
+                }}
+                className="flex items-center gap-2 rounded-lg bg-zinc-950 border border-zinc-800 text-xs px-2.5 py-1.5 font-bold text-white hover:border-zinc-700 transition-colors cursor-pointer select-none"
+              >
+                <Calendar className="h-3.5 w-3.5 text-zinc-400" />
+                <span className="text-[10px] font-bold text-zinc-400 uppercase tracking-wider">Đến:</span>
+                <input
+                  type="date"
+                  value={toDate}
+                  onChange={(e) => setToDate(e.target.value)}
+                  onClick={(e) => e.stopPropagation()}
+                  className="bg-transparent text-white focus:outline-none cursor-pointer [color-scheme:dark] font-bold text-xs"
+                />
+              </div>
+            </div>
+
+            <div className="flex gap-2 pl-0 sm:pl-2">
+              <button
+                type="button"
+                onClick={handleApplyFilter}
+                className="rounded-lg bg-blue-600 hover:bg-blue-700 text-[10px] font-black text-white px-3.5 py-1.5 transition-all shadow-md active:scale-95 cursor-pointer uppercase tracking-wider"
+              >
+                Lọc
+              </button>
+              {(fromDate || toDate) && (
+                <button
+                  type="button"
+                  onClick={handleResetFilter}
+                  className="rounded-lg bg-zinc-800 hover:bg-zinc-700 text-[10px] font-black text-zinc-300 px-3.5 py-1.5 transition-all active:scale-95 cursor-pointer uppercase tracking-wider border border-zinc-700"
+                >
+                  Xóa
+                </button>
+              )}
+            </div>
           </div>
         </div>
       </div>
@@ -189,21 +269,40 @@ export default function AdminDashboard() {
         {/* Monthly Revenue Chart */}
         <div className="lg:col-span-2 rounded-2xl border border-zinc-200 bg-white p-6 shadow-sm">
           <h2 className="text-sm font-bold text-zinc-900 mb-6 flex items-center gap-2">
-            <Landmark className="h-4.5 w-4.5 text-zinc-400" /> Doanh thu nền tảng theo tháng
+            <Landmark className="h-4.5 w-4.5 text-zinc-400" /> Biểu đồ doanh thu nền tảng
           </h2>
           <div className="h-72 w-full">
             {mounted && stats && stats.monthlyRevenue.length > 0 ? (
               <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={stats.monthlyRevenue} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
-                  <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e4e4e7" />
-                  <XAxis dataKey="month" stroke="#71717a" fontSize={11} tickLine={false} />
-                  <YAxis stroke="#71717a" fontSize={11} tickLine={false} axisLine={false} tickFormatter={(val) => `${val / 1000000}M`} />
-                  <Tooltip formatter={(value: any) => [formatVND(value), 'Doanh thu']} />
-                  <Bar dataKey="revenue" fill="#3b82f6" radius={[6, 6, 0, 0]} barSize={32} />
-                </BarChart>
+                <LineChart data={stats.monthlyRevenue} margin={{ top: 15, right: 15, left: -10, bottom: 5 }}>
+                  <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f3f4f6" />
+                  <XAxis dataKey="month" hide />
+                  <YAxis 
+                    stroke="#9ca3af" 
+                    fontSize={10} 
+                    tickLine={false} 
+                    axisLine={false} 
+                    tickFormatter={(val) => val >= 1000000 ? `${(val / 1000000).toFixed(1)}M` : val >= 1000 ? `${(val / 1000).toFixed(0)}k` : `${val}đ`} 
+                  />
+                  <Tooltip 
+                    contentStyle={{ backgroundColor: '#18181b', border: '1px solid #27272a', borderRadius: '12px' }}
+                    labelStyle={{ color: '#a1a1aa', fontWeight: 'bold', fontSize: '11px' }}
+                    itemStyle={{ color: '#3b82f6', fontSize: '12px' }}
+                    labelFormatter={(label) => `Thời gian: ${label}`}
+                    formatter={(value: any) => [formatVND(value), 'Doanh thu']} 
+                  />
+                  <Line 
+                    type="monotone" 
+                    dataKey="revenue" 
+                    stroke="#3b82f6" 
+                    strokeWidth={2.5} 
+                    dot={false} 
+                    activeDot={{ r: 6, fill: '#3b82f6', stroke: '#ffffff', strokeWidth: 2 }} 
+                  />
+                </LineChart>
               </ResponsiveContainer>
             ) : (
-              <div className="h-full flex items-center justify-center text-zinc-400 text-xs font-semibold">Chưa có dữ liệu giao dịch tháng này</div>
+              <div className="h-full flex items-center justify-center text-zinc-400 text-xs font-semibold">Chưa có dữ liệu giao dịch trong khoảng thời gian này</div>
             )}
           </div>
         </div>
@@ -398,8 +497,11 @@ export default function AdminDashboard() {
                   <tbody className="divide-y divide-zinc-100">
                     {stats.topInstructorsByRevenue.map((inst, idx) => (
                       <tr key={idx} className="hover:bg-zinc-50/50">
-                        <td className="py-3 font-bold text-zinc-800">
-                          {inst.instructorName}
+                        <td className="py-3">
+                          <div className="flex flex-col">
+                            <span className="font-bold text-zinc-800">{inst.instructorName}</span>
+                            <span className="text-[10px] text-zinc-400 font-medium">{inst.email || '---'}</span>
+                          </div>
                         </td>
                         <td className="py-3 text-center font-bold text-zinc-900">
                           {inst.studentCount}
@@ -476,8 +578,11 @@ export default function AdminDashboard() {
                   <tbody className="divide-y divide-zinc-100">
                     {stats.topInstructorsByEnrollment.map((inst, idx) => (
                       <tr key={idx} className="hover:bg-zinc-50/50">
-                        <td className="py-3 font-bold text-zinc-800">
-                          {inst.instructorName}
+                        <td className="py-3">
+                          <div className="flex flex-col">
+                            <span className="font-bold text-zinc-800">{inst.instructorName}</span>
+                            <span className="text-[10px] text-zinc-400 font-medium">{inst.email || '---'}</span>
+                          </div>
                         </td>
                         <td className="py-3 text-center font-black text-amber-600">
                           {inst.studentCount}

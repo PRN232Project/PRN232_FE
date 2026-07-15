@@ -4,7 +4,7 @@ import React, { useEffect, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { useAuth } from '@/context/AuthContext';
 import { Course, LessonItem, GradedAttempt, UserLessonProgress, LessonItemType, studentService, courseService } from '@/lib/service';
-import { ArrowLeft, Play, FileText, CheckCircle2, FileDown, GraduationCap, Award, RefreshCw, HelpCircle } from 'lucide-react';
+import { ArrowLeft, Play, FileText, CheckCircle2, FileDown, GraduationCap, Award, RefreshCw, HelpCircle, BookOpen, Clock, ChevronRight, LayoutDashboard } from 'lucide-react';
 
 const getYoutubeId = (url: string) => {
   if (!url) return null;
@@ -54,17 +54,9 @@ export default function LearningPage() {
       }
       setInitialProgressLoaded(true);
 
-      // Select first lesson item by default
-      if (courseData.modules && courseData.modules.length > 0) {
-        const firstMod = courseData.modules[0];
-        if (firstMod.lessons && firstMod.lessons.length > 0) {
-          const firstLes = firstMod.lessons[0];
-          setSelectedLessonId(firstLes.lessonId);
-          if (firstLes.lessonItems && firstLes.lessonItems.length > 0) {
-            setSelectedItem(firstLes.lessonItems[0]);
-          }
-        }
-      }
+      // Do not select first lesson item by default; let it be null to display the overview dashboard first.
+      setSelectedLessonId('');
+      setSelectedItem(null);
     } catch (err) {
       console.error(err);
     } finally {
@@ -105,6 +97,34 @@ export default function LearningPage() {
       setPracticeText(item.practice.attempts[0].submittedText || '');
     } else {
       setPracticeAttempt(null);
+    }
+  };
+
+  const handleContinueLearning = () => {
+    if (!course || !course.modules) return;
+    
+    // Find first lesson item that is not completed
+    for (const mod of course.modules) {
+      if (!mod.lessons) continue;
+      for (const les of mod.lessons) {
+        const completed = isLessonCompleted(les.lessonId);
+        if (!completed && les.lessonItems && les.lessonItems.length > 0) {
+          handleSelectLessonItem(les.lessonItems[0], les.lessonId);
+          return;
+        }
+      }
+    }
+    
+    // Fallback: select the very first item if all completed or none found
+    if (course.modules.length > 0) {
+      const firstMod = course.modules[0];
+      if (firstMod.lessons && firstMod.lessons.length > 0) {
+        const firstLes = firstMod.lessons[0];
+        if (firstLes.lessonItems && firstLes.lessonItems.length > 0) {
+          handleSelectLessonItem(firstLes.lessonItems[0], firstLes.lessonId);
+          return;
+        }
+      }
     }
   };
 
@@ -220,16 +240,30 @@ export default function LearningPage() {
       
       {/* Top Header Navigation */}
       <header className="flex h-14 items-center justify-between border-b border-zinc-800 bg-zinc-950 px-6 shrink-0 z-20">
-        <div className="flex items-center gap-4">
+        <div className="flex items-center gap-3">
           <a
             href="/dashboard"
-            className="flex h-8 w-8 items-center justify-center rounded-lg hover:bg-zinc-900 text-zinc-400 hover:text-white transition-all cursor-pointer border border-zinc-800"
+            className="flex h-8 w-8 items-center justify-center rounded-lg hover:bg-zinc-900 text-zinc-400 hover:text-white transition-all cursor-pointer border border-zinc-800 shrink-0"
+            title="Quay lại danh sách khóa học"
           >
             <ArrowLeft className="h-4.5 w-4.5" />
           </a>
+          {selectedItem && (
+            <button
+              onClick={() => {
+                setSelectedItem(null);
+                setSelectedLessonId('');
+              }}
+              className="flex h-8 items-center justify-center gap-1.5 rounded-lg bg-zinc-900 hover:bg-zinc-850 border border-zinc-800 text-[10px] font-bold text-zinc-400 hover:text-white px-2.5 transition-all active:scale-98 cursor-pointer shrink-0"
+              title="Quay lại trang tổng quan khóa học"
+            >
+              <LayoutDashboard className="h-3.5 w-3.5" />
+              <span className="hidden sm:inline">Tổng quan</span>
+            </button>
+          )}
           <div className="overflow-hidden">
             <span className="text-[9px] text-zinc-500 font-bold block uppercase tracking-widest">Đang Học</span>
-            <span className="text-xs font-bold text-white truncate block max-w-md">{course.title}</span>
+            <span className="text-xs font-bold text-white truncate block max-w-[150px] sm:max-w-md">{course.title}</span>
           </div>
         </div>
 
@@ -569,83 +603,304 @@ export default function LearningPage() {
 
             </div>
           ) : (
-            <div className="text-center py-20 text-zinc-500 text-sm font-semibold">Vui lòng chọn bài học từ menu bên phải.</div>
+            <div className="max-w-4xl mx-auto w-full space-y-8 py-4">
+              
+              {/* Course Intro Card */}
+              <div className="relative overflow-hidden rounded-3xl bg-zinc-950 p-6 md:p-8 text-white border border-zinc-800/80 shadow-2xl">
+                <div className="absolute top-0 right-0 w-80 h-80 bg-indigo-500/10 rounded-full blur-[80px] pointer-events-none" />
+                <div className="absolute bottom-0 left-20 w-64 h-64 bg-purple-500/10 rounded-full blur-[80px] pointer-events-none" />
+                
+                <div className="relative z-10 space-y-4">
+                  <div className="flex flex-wrap items-center gap-2">
+                    <span className="inline-flex items-center gap-1 rounded-full bg-indigo-500/10 border border-indigo-500/20 px-2.5 py-0.5 text-[10px] font-bold text-indigo-400 uppercase tracking-wider">
+                      Khóa học của tôi
+                    </span>
+                    <span className="inline-flex items-center gap-1 rounded-full bg-zinc-800 border border-zinc-700 px-2.5 py-0.5 text-[10px] font-bold text-zinc-300 uppercase tracking-wider">
+                      {course.level === 0 ? 'Cơ bản' : course.level === 1 ? 'Trung bình' : 'Nâng cao'}
+                    </span>
+                  </div>
+                  
+                  <h1 className="text-2xl sm:text-3xl md:text-4xl font-black tracking-tight text-white leading-tight">
+                    {course.title}
+                  </h1>
+                  
+                  <p className="text-zinc-400 text-xs sm:text-sm font-medium leading-relaxed max-w-3xl">
+                    {course.subtitle || course.description || 'Không có mô tả chi tiết cho khóa học này.'}
+                  </p>
+
+                  <div className="pt-2 flex flex-wrap items-center gap-4 text-xs text-zinc-500 font-bold border-t border-zinc-900/60 mt-4">
+                    <div className="flex items-center gap-1.5">
+                      <BookOpen className="h-4 w-4 text-zinc-400" />
+                      <span>{course.modules?.length || 0} Modules</span>
+                    </div>
+                    <div className="flex items-center gap-1.5">
+                      <Clock className="h-4 w-4 text-zinc-400" />
+                      <span>{totalLessons} Bài học</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Progress & Quick Start Row */}
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div className="md:col-span-2 rounded-2xl bg-zinc-900/50 border border-zinc-800/80 p-6 flex flex-col justify-between shadow-xl space-y-4">
+                  <div className="space-y-1.5">
+                    <h3 className="text-xs font-bold text-zinc-400 uppercase tracking-wider">Tiến trình học tập</h3>
+                    <p className="text-xs text-zinc-500">Hoàn thành toàn bộ các bài học để nhận chứng chỉ tốt nghiệp từ nền tảng.</p>
+                  </div>
+                  
+                  <div className="space-y-2">
+                    <div className="flex items-center justify-between text-xs font-black">
+                      <span className="text-zinc-400">Đã học xong {completedLessons} trên {totalLessons} bài</span>
+                      <span className="text-indigo-400">{overallProgress}% Hoàn thành</span>
+                    </div>
+                    <div className="w-full bg-zinc-950 h-2 rounded-full overflow-hidden border border-zinc-850">
+                      <div
+                        className="bg-indigo-500 h-full rounded-full transition-all duration-500 shadow-md shadow-indigo-500/25"
+                        style={{ width: `${overallProgress}%` }}
+                      />
+                    </div>
+                  </div>
+
+                  <div className="pt-2">
+                    <button
+                      onClick={handleContinueLearning}
+                      className="inline-flex items-center gap-2 rounded-xl bg-indigo-600 hover:bg-indigo-700 active:scale-98 text-xs font-black text-white px-5 py-3 shadow-lg shadow-indigo-500/10 hover:shadow-indigo-500/20 transition-all cursor-pointer"
+                    >
+                      <Play className="h-4 w-4 fill-white" />
+                      {completedLessons > 0 ? 'Tiếp tục bài học' : 'Bắt đầu học ngay'}
+                    </button>
+                  </div>
+                </div>
+
+                <div className="rounded-2xl bg-zinc-900/50 border border-zinc-800/80 p-6 flex flex-col items-center justify-center text-center shadow-xl space-y-3">
+                  <div className={`flex h-12 w-12 items-center justify-center rounded-2xl border shadow-md ${
+                    overallProgress === 100 
+                      ? 'bg-amber-500/10 border-amber-500/30 text-amber-400' 
+                      : 'bg-zinc-950 border-zinc-850 text-zinc-500'
+                  }`}>
+                    <Award className="h-6 w-6" />
+                  </div>
+                  <div>
+                    <h4 className="text-xs font-bold text-zinc-200">Chứng chỉ tốt nghiệp</h4>
+                    <p className="text-[10px] text-zinc-500 max-w-[180px] mt-1 leading-normal">
+                      {overallProgress === 100 
+                        ? 'Chứng chỉ của bạn đã sẵn sàng! Bấm xem ngay bên dưới.' 
+                        : 'Hoàn thành 100% khóa học để mở khóa chứng chỉ số hóa.'}
+                    </p>
+                  </div>
+                  {overallProgress === 100 && (
+                    <a
+                      href="/certificates"
+                      className="text-xs font-bold text-amber-400 hover:text-amber-300 transition-colors pt-1"
+                    >
+                      Xem chứng chỉ &rarr;
+                    </a>
+                  )}
+                </div>
+              </div>
+
+              {/* Modules Syllabus Checklist */}
+              <div className="space-y-4">
+                <h3 className="text-sm font-black text-white uppercase tracking-wider flex items-center gap-2">
+                  <BookOpen className="h-4.5 w-4.5 text-indigo-400" />
+                  Chương trình học chi tiết
+                </h3>
+
+                <div className="space-y-6">
+                  {course.modules?.map((mod, modIdx) => (
+                    <div
+                      key={mod.moduleId}
+                      className="rounded-2xl border border-zinc-800/80 bg-zinc-900/30 overflow-hidden shadow-lg transition-all"
+                    >
+                      {/* Module title header banner */}
+                      <div className="bg-zinc-900/80 px-6 py-4 border-b border-zinc-800/80 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                        <div className="space-y-1">
+                          <span className="text-[9px] font-black text-indigo-400 uppercase tracking-widest">
+                            Module {modIdx + 1}
+                          </span>
+                          <h4 className="text-sm font-black text-white leading-snug">
+                            {mod.title}
+                          </h4>
+                        </div>
+                        <span className="text-[10px] text-zinc-500 font-bold bg-zinc-950 px-2 py-0.5 rounded border border-zinc-850 shrink-0 self-start sm:self-center">
+                          {mod.lessons?.length || 0} Bài học
+                        </span>
+                      </div>
+
+                      {/* Lessons and Items listing */}
+                      <div className="divide-y divide-zinc-800/40">
+                        {mod.lessons && mod.lessons.length > 0 ? (
+                          mod.lessons.map((les, lesIdx) => {
+                            const completed = isLessonCompleted(les.lessonId);
+                            return (
+                              <div key={les.lessonId} className="p-5 space-y-3 hover:bg-zinc-900/20 transition-colors">
+                                <div className="flex items-center justify-between gap-4">
+                                  <div className="flex items-center gap-3">
+                                    <span className="flex h-5 w-5 items-center justify-center rounded-lg bg-zinc-950 border border-zinc-850 text-[10px] font-black text-zinc-400">
+                                      {lesIdx + 1}
+                                    </span>
+                                    <h5 className="text-xs font-bold text-zinc-200">{les.title}</h5>
+                                  </div>
+                                  {completed ? (
+                                    <span className="inline-flex items-center gap-1 text-[10px] font-bold text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 px-2 py-0.5 rounded-md">
+                                      <CheckCircle2 className="h-3 w-3" /> Hoàn thành
+                                    </span>
+                                  ) : (
+                                    <span className="text-[9px] text-zinc-500 font-bold bg-zinc-950 px-2 py-0.5 rounded border border-zinc-850">
+                                      Chưa học
+                                    </span>
+                                  )}
+                                </div>
+
+                                {/* Nested items buttons */}
+                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 pl-8">
+                                  {les.lessonItems?.map((li) => {
+                                    const getIcon = (type: LessonItemType) => {
+                                      switch (type) {
+                                        case LessonItemType.Video:
+                                          return <Play className="h-4 w-4 text-indigo-400 fill-indigo-400/20 shrink-0" />;
+                                        case LessonItemType.Quiz:
+                                          return <HelpCircle className="h-4 w-4 text-amber-500 shrink-0" />;
+                                        case LessonItemType.Practice:
+                                          return <Award className="h-4 w-4 text-pink-400 shrink-0" />;
+                                        default:
+                                          return <FileText className="h-4 w-4 text-emerald-400 shrink-0" />;
+                                      }
+                                    };
+
+                                    return (
+                                      <button
+                                        key={li.lessonItemId}
+                                        onClick={() => handleSelectLessonItem(li, les.lessonId)}
+                                        className="flex items-center justify-between p-3 rounded-xl border border-zinc-800 bg-zinc-950/40 hover:bg-zinc-900 hover:border-zinc-750 transition-all text-left group cursor-pointer animate-fade-in"
+                                      >
+                                        <div className="flex items-center gap-2.5 truncate">
+                                          {getIcon(li.type)}
+                                          <div className="truncate">
+                                            <span className="text-xs font-bold text-zinc-300 group-hover:text-white transition-colors truncate block">
+                                              {li.title}
+                                            </span>
+                                            <span className="text-[9px] text-zinc-500 font-medium block">
+                                              {li.type === LessonItemType.Video ? 'Video bài giảng' : li.type === LessonItemType.Quiz ? 'Trắc nghiệm' : li.type === LessonItemType.Practice ? 'Bài tập thực hành' : 'Bài đọc'}
+                                            </span>
+                                          </div>
+                                        </div>
+                                        <div className="flex items-center gap-1.5 shrink-0 ml-2">
+                                          <span className="text-[9px] text-zinc-500 font-bold bg-zinc-900 px-1.5 py-0.5 rounded border border-zinc-800">
+                                            {li.durationMinutes}m
+                                          </span>
+                                          <ChevronRight className="h-3.5 w-3.5 text-zinc-600 group-hover:text-indigo-400 transition-colors" />
+                                        </div>
+                                      </button>
+                                    );
+                                  })}
+                                </div>
+                              </div>
+                            );
+                          })
+                        ) : (
+                          <div className="p-6 text-center text-zinc-500 text-xs font-semibold">
+                            Không có bài học nào trong module này.
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+            </div>
           )}
         </div>
       
-        {/* Right Side: Syllabus Navigation Sidebar (30% width) */}
-        <aside className="w-80 shrink-0 bg-zinc-950 flex flex-col overflow-y-auto border-l border-zinc-800 z-10">
-          <div className="px-5 py-4 border-b border-zinc-800 bg-zinc-950/50 sticky top-0 z-10 flex items-center justify-between">
-            <h3 className="font-bold text-white text-[10px] uppercase tracking-widest">Nội dung học tập</h3>
-            <span className="text-[10px] text-zinc-500 font-bold bg-zinc-900 px-2 py-0.5 rounded border border-zinc-800">
-              {completedLessons}/{totalLessons} Bài
-            </span>
-          </div>
-
-          <div className="divide-y divide-zinc-800/40">
-            {course.modules?.map((mod) => (
-              <div key={mod.moduleId} className="p-4 space-y-3">
-                <div className="flex items-start gap-2">
-                  <span className="flex h-4.5 w-4.5 items-center justify-center rounded bg-zinc-900 border border-zinc-800 text-[9px] font-bold text-zinc-500 shrink-0 mt-0.5">
-                    M
-                  </span>
-                  <h4 className="text-xs font-black text-zinc-300 leading-tight">{mod.title}</h4>
-                </div>
-                <div className="space-y-1">
-                  {mod.lessons?.map((les) => {
-                    const activeLesson = les.lessonId === selectedLessonId;
-                    const completed = isLessonCompleted(les.lessonId);
-                    return (
-                      <div key={les.lessonId} className="space-y-1">
-                        <div className={`p-2 rounded-lg flex items-center justify-between text-xs font-bold ${
-                          activeLesson ? 'bg-zinc-900 text-white border border-zinc-800' : 'text-zinc-500'
-                        }`}>
-                          <span className="truncate">{les.title}</span>
-                          {completed && <CheckCircle2 className="h-3.5 w-3.5 text-emerald-500 shrink-0 ml-1.5" />}
-                        </div>
-                        {/* Lesson Items nested */}
-                        <div className="pl-3.5 space-y-0.5 border-l border-zinc-900 ml-3">
-                          {les.lessonItems?.map((li) => {
-                            const isSelected = selectedItem?.lessonItemId === li.lessonItemId;
-                            const getItemIcon = (type: LessonItemType) => {
-                              switch (type) {
-                                case LessonItemType.Video:
-                                  return <Play className="h-3.5 w-3.5 text-indigo-400" />;
-                                case LessonItemType.Quiz:
-                                  return <HelpCircle className="h-3.5 w-3.5 text-amber-500" />;
-                                case LessonItemType.Practice:
-                                  return <Award className="h-3.5 w-3.5 text-pink-400" />;
-                                default:
-                                  return <FileText className="h-3.5 w-3.5 text-emerald-400" />;
-                              }
-                            };
-                            return (
-                              <button
-                                key={li.lessonItemId}
-                                onClick={() => handleSelectLessonItem(li, les.lessonId)}
-                                className={`w-full text-left p-2 rounded-lg text-[11px] flex items-center justify-between transition-all duration-150 cursor-pointer ${
-                                  isSelected
-                                    ? 'bg-indigo-600/10 text-indigo-300 font-bold border border-indigo-500/20'
-                                    : 'text-zinc-500 hover:text-zinc-300 border border-transparent'
-                                }`}
-                              >
-                                <div className="flex items-center gap-2 truncate">
-                                  {getItemIcon(li.type)}
-                                  <span className="truncate">{li.title}</span>
-                                </div>
-                                <span className="text-[9px] text-zinc-600 shrink-0 ml-1 font-bold">{li.durationMinutes}m</span>
-                              </button>
-                            );
-                          })}
-                        </div>
-                      </div>
-                    );
-                  })}
-                </div>
+        {/* Right Side: Syllabus Navigation Sidebar (30% width) - Only shown when active lesson is selected */}
+        {selectedItem && (
+          <aside className="w-80 shrink-0 bg-zinc-950 flex flex-col overflow-y-auto border-l border-zinc-800 z-10 animate-fade-in">
+            <div className="px-5 py-3 border-b border-zinc-800 bg-zinc-950/80 sticky top-0 z-10 flex flex-col gap-2">
+              <div className="flex items-center justify-between">
+                <h3 className="font-bold text-white text-[10px] uppercase tracking-widest">Nội dung học tập</h3>
+                <span className="text-[10px] text-zinc-500 font-bold bg-zinc-900 px-2 py-0.5 rounded border border-zinc-800">
+                  {completedLessons}/{totalLessons} Bài
+                </span>
               </div>
-            ))}
-          </div>
-        </aside>
+              <button
+                onClick={() => {
+                  setSelectedItem(null);
+                  setSelectedLessonId('');
+                }}
+                className="w-full flex items-center justify-center gap-1.5 rounded-lg bg-zinc-900 hover:bg-zinc-850 border border-zinc-800 text-[10px] font-bold text-zinc-400 hover:text-white py-1.5 transition-all active:scale-98 cursor-pointer mt-1"
+              >
+                <LayoutDashboard className="h-3.5 w-3.5" />
+                Xem tổng quan khóa học
+              </button>
+            </div>
+
+            <div className="divide-y divide-zinc-800/40">
+              {course.modules?.map((mod) => (
+                <div key={mod.moduleId} className="p-4 space-y-3">
+                  <div className="flex items-start gap-2">
+                    <span className="flex h-4.5 w-4.5 items-center justify-center rounded bg-zinc-900 border border-zinc-800 text-[9px] font-bold text-zinc-500 shrink-0 mt-0.5">
+                      M
+                    </span>
+                    <h4 className="text-xs font-black text-zinc-300 leading-tight">{mod.title}</h4>
+                  </div>
+                  <div className="space-y-1">
+                    {mod.lessons?.map((les) => {
+                      const activeLesson = les.lessonId === selectedLessonId;
+                      const completed = isLessonCompleted(les.lessonId);
+                      return (
+                        <div key={les.lessonId} className="space-y-1">
+                          <div className={`p-2 rounded-lg flex items-center justify-between text-xs font-bold ${
+                            activeLesson ? 'bg-zinc-900 text-white border border-zinc-800' : 'text-zinc-500'
+                          }`}>
+                            <span className="truncate">{les.title}</span>
+                            {completed && <CheckCircle2 className="h-3.5 w-3.5 text-emerald-500 shrink-0 ml-1.5" />}
+                          </div>
+                          {/* Lesson Items nested */}
+                          <div className="pl-3.5 space-y-0.5 border-l border-zinc-900 ml-3">
+                            {les.lessonItems?.map((li) => {
+                              const isSelected = selectedItem?.lessonItemId === li.lessonItemId;
+                              const getItemIcon = (type: LessonItemType) => {
+                                switch (type) {
+                                  case LessonItemType.Video:
+                                    return <Play className="h-3.5 w-3.5 text-indigo-400" />;
+                                  case LessonItemType.Quiz:
+                                    return <HelpCircle className="h-3.5 w-3.5 text-amber-500" />;
+                                  case LessonItemType.Practice:
+                                    return <Award className="h-3.5 w-3.5 text-pink-400" />;
+                                  default:
+                                    return <FileText className="h-3.5 w-3.5 text-emerald-400" />;
+                                }
+                              };
+                              return (
+                                <button
+                                  key={li.lessonItemId}
+                                  onClick={() => handleSelectLessonItem(li, les.lessonId)}
+                                  className={`w-full text-left p-2 rounded-lg text-[11px] flex items-center justify-between transition-all duration-150 cursor-pointer ${
+                                    isSelected
+                                      ? 'bg-indigo-600/10 text-indigo-300 font-bold border border-indigo-500/20'
+                                      : 'text-zinc-500 hover:text-zinc-300 border border-transparent'
+                                  }`}
+                                >
+                                  <div className="flex items-center gap-2 truncate">
+                                    {getItemIcon(li.type)}
+                                    <span className="truncate">{li.title}</span>
+                                  </div>
+                                  <span className="text-[9px] text-zinc-600 shrink-0 ml-1 font-bold">{li.durationMinutes}m</span>
+                                </button>
+                              );
+                            })}
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </aside>
+        )}
 
       </div>
     </div>

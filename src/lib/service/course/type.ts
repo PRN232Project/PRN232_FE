@@ -35,6 +35,8 @@ export interface Course {
   modules?: Module[];
   enrollmentCount?: number;
   duration?: string;
+  level?: number;
+  subtitle?: string;
 }
 
 export interface Module {

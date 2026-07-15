@@ -5,7 +5,7 @@ import { AdminStats } from './type';
 import { mockUsers, mockCourses, mockTransactions } from '@/lib/service/mock-data';
 
 export const adminService = {
-  getStats: async (): Promise<AdminStats> => {
+  getStats: async (fromDate?: string, toDate?: string): Promise<AdminStats> => {
     if (USE_MOCK) {
       await delay(600);
       const studentCount = mockUsers.filter((u) => u.role === 2).length;
@@ -38,9 +38,17 @@ export const adminService = {
       };
     } else {
       const year = new Date().getFullYear();
+      let overviewUrl = '/admin/overview';
+      let dashboardUrl = `/admin/dashboard?year=${year}`;
+      
+      if (fromDate && toDate) {
+        overviewUrl += `?fromDate=${fromDate}&toDate=${toDate}`;
+        dashboardUrl = `/admin/dashboard?fromDate=${fromDate}&toDate=${toDate}`;
+      }
+
       const [overviewRes, dashboardRes, pendingCoursesRes] = await Promise.all([
-        apiClient.get<any>('/admin/overview'),
-        apiClient.get<any>(`/admin/dashboard?year=${year}`),
+        apiClient.get<any>(overviewUrl),
+        apiClient.get<any>(dashboardUrl),
         apiClient.get<any>('/admin/courses/pending')
       ]);
 
