@@ -3,22 +3,56 @@
 import React, { useEffect, useState } from 'react';
 import { Course, adminService } from '@/lib/service';
 import { useSignalR } from '@/context/SignalRContext';
-import { BookOpen, CheckCircle, XCircle, ChevronDown, ChevronUp, User, Search, X, Eye, FileText } from 'lucide-react';
+import { BookOpen, CheckCircle, XCircle, ChevronDown, ChevronUp, User, Search, X, Eye, FileText, Video, HelpCircle, Paperclip, ExternalLink, Calendar, Tag, Signal, Layers, Clock } from 'lucide-react';
+
+interface LessonResource {
+  lessonResourceId: string;
+  title?: string;
+  resourceType?: number;
+  resourceUrl?: string;
+  textContent?: string;
+  videoSourceType?: number;
+}
+
+interface LessonItem {
+  lessonItemId: string;
+  type: number; // 0: Video, 1: Document/Article, 2: Quiz
+  orderIndex: number;
+  resources?: LessonResource[];
+  gradedItem?: {
+    gradedItemId: string;
+    submissionGuidelines?: string;
+    questionCount?: number;
+  };
+}
+
+interface CourseLesson {
+  lessonId: string;
+  title: string;
+  description?: string;
+  orderIndex: number;
+  estimatedMinutes: number;
+  items?: LessonItem[];
+}
 
 interface CourseModule {
   moduleId: string;
   title: string;
   index: number;
-  lessons: { lessonId: string; title: string; description?: string; orderIndex: number; estimatedMinutes: number }[];
+  lessons: CourseLesson[];
 }
 
 interface CourseDetail {
   courseId: string;
   title: string;
+  subtitle?: string;
   description: string;
   price: number;
   image?: string;
-  level?: string;
+  level?: number | string;
+  tags?: string;
+  submittedAt?: string;
+  createdAt?: string;
   instructorName: string;
   modules: CourseModule[];
 }
@@ -245,123 +279,293 @@ export default function AdminCoursesPage() {
         </div>
       )}
 
-      {/* ─── Curriculum Preview Modal ─── */}
+      {/* ─── Curriculum & Detail Preview Modal ─── */}
       {(curriculumLoading || curriculumModal) && (
         <div
           className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm p-4"
           onClick={() => { if (!curriculumLoading) setCurriculumModal(null); }}
         >
           <div
-            className="relative w-full max-w-2xl bg-white rounded-2xl shadow-2xl border border-zinc-100 overflow-hidden flex flex-col max-h-[90vh]"
+            className="relative w-full max-w-4xl bg-white rounded-2xl shadow-2xl border border-zinc-100 overflow-hidden flex flex-col max-h-[90vh]"
             onClick={(e) => e.stopPropagation()}
           >
             {/* Modal Header */}
-            <div className="flex items-start justify-between gap-4 p-5 border-b border-zinc-100">
+            <div className="flex items-center justify-between gap-4 p-5 border-b border-zinc-100 bg-zinc-50/50">
               <div className="flex items-center gap-3">
-                <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-indigo-50 text-indigo-600">
+                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-indigo-100 text-indigo-600 shadow-sm">
                   <FileText className="h-5 w-5" />
                 </div>
                 <div>
-                  <h3 className="font-bold text-zinc-950 text-sm">
-                    {curriculumLoading ? 'Đang tải đề cương...' : curriculumModal?.title}
+                  <h3 className="font-bold text-zinc-950 text-base">
+                    {curriculumLoading ? 'Đang tải chi tiết khóa học...' : 'Kiểm Duyệt Chi Tiết Khóa Học'}
                   </h3>
                   {curriculumModal && (
-                    <p className="text-[10px] text-zinc-500 mt-0.5">
-                      GV: {curriculumModal.instructorName} · {curriculumModal.modules?.length || 0} chương
+                    <p className="text-xs text-zinc-500 mt-0.5">
+                      Giảng viên: <span className="font-semibold text-zinc-700">{curriculumModal.instructorName}</span> · {curriculumModal.modules?.length || 0} chương học
                     </p>
                   )}
                 </div>
               </div>
               <button
                 onClick={() => setCurriculumModal(null)}
-                className="shrink-0 rounded-full p-1.5 text-zinc-400 hover:bg-zinc-100 hover:text-zinc-700 transition-colors"
+                className="shrink-0 rounded-full p-2 text-zinc-400 hover:bg-zinc-200 hover:text-zinc-700 transition-colors"
               >
-                <X className="h-4 w-4" />
+                <X className="h-5 w-5" />
               </button>
             </div>
 
             {/* Modal Body */}
-            <div className="overflow-y-auto flex-1">
+            <div className="overflow-y-auto flex-1 p-6 space-y-6">
               {curriculumLoading ? (
-                <div className="flex items-center justify-center py-20 text-zinc-400 text-sm">
-                  <svg className="animate-spin h-5 w-5 mr-2 text-indigo-500" viewBox="0 0 24 24" fill="none">
+                <div className="flex flex-col items-center justify-center py-24 text-zinc-400 text-sm">
+                  <svg className="animate-spin h-7 w-7 mb-3 text-indigo-600" viewBox="0 0 24 24" fill="none">
                     <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
                     <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z" />
                   </svg>
-                  Đang tải đề cương...
+                  <span>Đang tải nội dung chi tiết khóa học...</span>
                 </div>
-              ) : curriculumModal?.modules?.length === 0 ? (
-                <div className="flex flex-col items-center justify-center py-16 text-center px-6">
-                  <BookOpen className="h-10 w-10 text-zinc-300 mb-3" />
-                  <p className="text-zinc-500 text-sm font-medium">Khóa học chưa có chương học nào</p>
-                  <p className="text-xs text-zinc-400 mt-1">Giảng viên chưa thêm nội dung đề cương.</p>
-                </div>
-              ) : (
-                <div className="divide-y divide-zinc-100">
-                  {curriculumModal?.modules?.map((mod, idx) => (
-                    <div key={mod.moduleId}>
-                      <button
-                        onClick={() => toggleModule(mod.moduleId)}
-                        className="w-full flex items-center justify-between gap-3 px-5 py-3.5 hover:bg-zinc-50 transition-colors text-left"
-                      >
-                        <div className="flex items-center gap-3">
-                          <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-indigo-100 text-indigo-700 text-[10px] font-bold">
-                            {idx + 1}
+              ) : curriculumModal && (
+                <>
+                  {/* 1. Course Overview Banner */}
+                  <div className="rounded-xl border border-zinc-200 bg-zinc-50/50 p-5 flex flex-col md:flex-row gap-5 items-start">
+                    {curriculumModal.image && (
+                      <img
+                        src={curriculumModal.image}
+                        alt={curriculumModal.title}
+                        className="w-full md:w-56 h-36 rounded-lg object-cover border border-zinc-200 shadow-sm shrink-0"
+                      />
+                    )}
+                    <div className="space-y-2 flex-1">
+                      <div className="flex flex-wrap items-center gap-2">
+                        <span className="px-2.5 py-0.5 rounded-full bg-indigo-50 text-indigo-700 text-[10px] font-bold border border-indigo-100">
+                          {typeof curriculumModal.level === 'number'
+                            ? ['Cơ bản', 'Trung cấp', 'Nâng cao', 'Mọi cấp độ'][curriculumModal.level] || 'Mọi cấp độ'
+                            : curriculumModal.level || 'Mọi cấp độ'}
+                        </span>
+                        <span className="px-2.5 py-0.5 rounded-full bg-emerald-50 text-emerald-700 text-[10px] font-bold border border-emerald-100">
+                          {formatVND(curriculumModal.price)}
+                        </span>
+                        {curriculumModal.submittedAt && (
+                          <span className="text-[10px] text-zinc-400 flex items-center gap-1 ml-auto">
+                            <Clock className="h-3 w-3" />
+                            Nộp lúc: {new Date(curriculumModal.submittedAt).toLocaleDateString('vi-VN')}
                           </span>
-                          <span className="font-semibold text-zinc-800 text-sm">{mod.title}</span>
-                          <span className="text-[10px] text-zinc-400">({mod.lessons?.length || 0} bài)</span>
-                        </div>
-                        {expandedModules.has(mod.moduleId)
-                          ? <ChevronUp className="h-4 w-4 text-zinc-400 shrink-0" />
-                          : <ChevronDown className="h-4 w-4 text-zinc-400 shrink-0" />
-                        }
-                      </button>
+                        )}
+                      </div>
 
-                      {expandedModules.has(mod.moduleId) && mod.lessons?.length > 0 && (
-                        <div className="bg-zinc-50/70 divide-y divide-zinc-100/80">
-                          {mod.lessons.map((lesson, lIdx) => (
-                            <div key={lesson.lessonId} className="flex items-center gap-3 px-5 py-2.5 pl-14">
-                              <span className="text-[10px] text-zinc-400 font-mono w-6 shrink-0">{lIdx + 1}.</span>
-                              <span className="text-xs text-zinc-700 flex-1">{lesson.title}</span>
-                              {lesson.estimatedMinutes > 0 && (
-                                <span className="text-[10px] text-zinc-400 shrink-0">{lesson.estimatedMinutes} phút</span>
-                              )}
-                            </div>
+                      <h2 className="text-lg font-bold text-zinc-950">{curriculumModal.title}</h2>
+                      {curriculumModal.subtitle && (
+                        <p className="text-xs font-medium text-zinc-600 italic">{curriculumModal.subtitle}</p>
+                      )}
+
+                      {curriculumModal.tags && (
+                        <div className="flex flex-wrap gap-1.5 pt-1">
+                          {curriculumModal.tags.split(',').map((tag, tIdx) => (
+                            <span key={tIdx} className="px-2 py-0.5 rounded bg-white text-zinc-600 text-[10px] border border-zinc-200 font-medium">
+                              #{tag.trim()}
+                            </span>
                           ))}
                         </div>
                       )}
 
-                      {expandedModules.has(mod.moduleId) && (!mod.lessons || mod.lessons.length === 0) && (
-                        <div className="px-5 py-3 pl-14 text-xs text-zinc-400 italic bg-zinc-50/70">
-                          Chương này chưa có bài học nào.
+                      {curriculumModal.description && (
+                        <div className="pt-2 border-t border-zinc-200/60 text-xs text-zinc-600 leading-relaxed max-h-32 overflow-y-auto">
+                          {curriculumModal.description}
                         </div>
                       )}
                     </div>
-                  ))}
-                </div>
+                  </div>
+
+                  {/* 2. Detailed Curriculum Inspector */}
+                  <div className="space-y-3">
+                    <div className="flex items-center justify-between">
+                      <h3 className="font-bold text-zinc-900 text-sm flex items-center gap-2">
+                        <Layers className="h-4 w-4 text-indigo-600" />
+                        Cấu trúc đề cương & Nội dung bài học ({curriculumModal.modules?.length || 0} chương)
+                      </h3>
+                      <button
+                        onClick={() => {
+                          if (expandedModules.size === curriculumModal.modules.length) {
+                            setExpandedModules(new Set());
+                          } else {
+                            setExpandedModules(new Set(curriculumModal.modules.map(m => m.moduleId)));
+                          }
+                        }}
+                        className="text-xs text-indigo-600 font-medium hover:underline"
+                      >
+                        {expandedModules.size === curriculumModal.modules.length ? 'Thu gọn tất cả' : 'Mở rộng tất cả'}
+                      </button>
+                    </div>
+
+                    {curriculumModal.modules?.length === 0 ? (
+                      <div className="rounded-xl border border-dashed border-zinc-300 p-8 text-center bg-white">
+                        <BookOpen className="h-8 w-8 text-zinc-300 mx-auto mb-2" />
+                        <p className="text-xs text-zinc-500">Khóa học chưa có học phần nào được khởi tạo.</p>
+                      </div>
+                    ) : (
+                      <div className="space-y-3">
+                        {curriculumModal.modules?.map((mod, idx) => {
+                          const isExpanded = expandedModules.has(mod.moduleId);
+                          return (
+                            <div key={mod.moduleId} className="rounded-xl border border-zinc-200 bg-white overflow-hidden shadow-2xs">
+                              <button
+                                onClick={() => toggleModule(mod.moduleId)}
+                                className="w-full flex items-center justify-between gap-3 px-5 py-3.5 bg-zinc-50/80 hover:bg-zinc-100/80 transition-colors text-left"
+                              >
+                                <div className="flex items-center gap-3">
+                                  <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-lg bg-indigo-600 text-white text-[11px] font-bold shadow-xs">
+                                    {idx + 1}
+                                  </span>
+                                  <span className="font-bold text-zinc-900 text-sm">{mod.title}</span>
+                                  <span className="text-[11px] text-zinc-500 font-medium">({mod.lessons?.length || 0} bài học)</span>
+                                </div>
+                                {isExpanded ? (
+                                  <ChevronUp className="h-4 w-4 text-zinc-400 shrink-0" />
+                                ) : (
+                                  <ChevronDown className="h-4 w-4 text-zinc-400 shrink-0" />
+                                )}
+                              </button>
+
+                              {isExpanded && (
+                                <div className="p-4 bg-white divide-y divide-zinc-100">
+                                  {mod.lessons?.length === 0 ? (
+                                    <p className="text-xs text-zinc-400 italic py-2">Học phần này chưa chứa bài học nào.</p>
+                                  ) : (
+                                    mod.lessons?.map((lesson, lIdx) => (
+                                      <div key={lesson.lessonId} className="py-3.5 first:pt-1 last:pb-1 space-y-2">
+                                        {/* Lesson Header */}
+                                        <div className="flex items-start justify-between gap-3">
+                                          <div className="flex items-center gap-2">
+                                            <span className="text-xs font-bold text-zinc-500 w-5 shrink-0">{lIdx + 1}.</span>
+                                            <h4 className="font-semibold text-zinc-850 text-xs">{lesson.title}</h4>
+                                          </div>
+                                          {lesson.estimatedMinutes > 0 && (
+                                            <span className="text-[10px] text-zinc-500 font-medium bg-zinc-100 px-2 py-0.5 rounded-full shrink-0 flex items-center gap-1">
+                                              <Clock className="h-3 w-3 text-zinc-400" />
+                                              {lesson.estimatedMinutes} phút
+                                            </span>
+                                          )}
+                                        </div>
+
+                                        {/* Lesson Description */}
+                                        {lesson.description && (
+                                          <p className="text-[11px] text-zinc-500 pl-7 leading-relaxed">{lesson.description}</p>
+                                        )}
+
+                                        {/* Lesson Items / Detailed Contents */}
+                                        {lesson.items && lesson.items.length > 0 ? (
+                                          <div className="pl-7 pt-1 space-y-2">
+                                            {lesson.items.map((item) => (
+                                              <div key={item.lessonItemId} className="rounded-lg border border-zinc-150 bg-zinc-50/50 p-2.5 space-y-1.5">
+                                                {/* Item Type Badge & Info */}
+                                                <div className="flex items-center justify-between text-[11px]">
+                                                  <div className="flex items-center gap-2 font-medium">
+                                                    {item.type === 0 && (
+                                                      <span className="flex items-center gap-1 text-indigo-600 font-semibold">
+                                                        <Video className="h-3.5 w-3.5" />
+                                                        [Video Bài Học]
+                                                      </span>
+                                                    )}
+                                                    {item.type === 1 && (
+                                                      <span className="flex items-center gap-1 text-emerald-600 font-semibold">
+                                                        <FileText className="h-3.5 w-3.5" />
+                                                        [Bài Đọc / Tài Liệu]
+                                                      </span>
+                                                    )}
+                                                    {item.type === 2 && (
+                                                      <span className="flex items-center gap-1 text-amber-600 font-semibold">
+                                                        <HelpCircle className="h-3.5 w-3.5" />
+                                                        [Bài Trắc Nghiệm / Quiz]
+                                                      </span>
+                                                    )}
+                                                  </div>
+
+                                                  {item.gradedItem && (
+                                                    <span className="text-[10px] font-bold text-amber-700 bg-amber-50 px-2 py-0.5 rounded border border-amber-200">
+                                                      {item.gradedItem.questionCount || 0} câu hỏi
+                                                    </span>
+                                                  )}
+                                                </div>
+
+                                                {/* Item Content / Resources */}
+                                                {item.resources?.map((res) => (
+                                                  <div key={res.lessonResourceId} className="text-[11px] text-zinc-700 pl-2 border-l-2 border-indigo-200 space-y-1">
+                                                    {res.title && <p className="font-semibold text-zinc-800">{res.title}</p>}
+
+                                                    {/* Video Link */}
+                                                    {res.resourceUrl && item.type === 0 && (
+                                                      <div className="flex items-center gap-2 pt-0.5">
+                                                        <a
+                                                          href={res.resourceUrl}
+                                                          target="_blank"
+                                                          rel="noreferrer"
+                                                          className="inline-flex items-center gap-1 text-[10px] font-semibold text-indigo-600 hover:text-indigo-800 hover:underline bg-indigo-50 px-2 py-0.5 rounded border border-indigo-100"
+                                                        >
+                                                          <ExternalLink className="h-3 w-3" />
+                                                          Mở link video kiểm tra
+                                                        </a>
+                                                        <span className="text-[10px] text-zinc-400 truncate max-w-xs">{res.resourceUrl}</span>
+                                                      </div>
+                                                    )}
+
+                                                    {/* Document Text Content Preview */}
+                                                    {res.textContent && (
+                                                      <div className="bg-white p-2 rounded border border-zinc-200 text-[11px] text-zinc-600 whitespace-pre-wrap max-h-24 overflow-y-auto">
+                                                        {res.textContent}
+                                                      </div>
+                                                    )}
+                                                  </div>
+                                                ))}
+
+                                                {/* Quiz Guidelines */}
+                                                {item.gradedItem?.submissionGuidelines && (
+                                                  <p className="text-[10px] text-zinc-500 italic pl-2">
+                                                    Hướng dẫn: {item.gradedItem.submissionGuidelines}
+                                                  </p>
+                                                )}
+                                              </div>
+                                            ))}
+                                          </div>
+                                        ) : (
+                                          <div className="pl-7 text-[10px] text-zinc-400 italic">
+                                            Chưa có nội dung chi tiết (video/bài đọc).
+                                          </div>
+                                        )}
+                                      </div>
+                                    ))
+                                  )}
+                                </div>
+                              )}
+                            </div>
+                          );
+                        })}
+                      </div>
+                    )}
+                  </div>
+                </>
               )}
             </div>
 
             {/* Modal Footer - approve/reject actions */}
             {curriculumModal && (
-              <div className="flex items-center justify-between gap-3 px-5 py-4 border-t border-zinc-100 bg-zinc-50/60">
-                <p className="text-[10px] text-zinc-400">
-                  Xem xét kỹ nội dung trước khi phê duyệt.
+              <div className="flex items-center justify-between gap-3 px-6 py-4 border-t border-zinc-100 bg-zinc-50/80">
+                <p className="text-[11px] text-zinc-500 font-medium">
+                  Đảm bảo nội dung bài học đáp ứng đúng tiêu chuẩn chất lượng của nền tảng.
                 </p>
                 <div className="flex gap-2">
                   <button
                     onClick={() => { setCurriculumModal(null); openRejectModal(curriculumModal.courseId); }}
-                    className="inline-flex items-center gap-1.5 rounded-lg bg-red-50 hover:bg-red-100 py-2 px-3.5 text-xs font-semibold text-red-600 border border-red-200 transition-colors cursor-pointer"
+                    className="inline-flex items-center gap-1.5 rounded-lg bg-red-50 hover:bg-red-100 py-2 px-4 text-xs font-semibold text-red-600 border border-red-200 transition-colors cursor-pointer"
                   >
-                    <XCircle className="h-3.5 w-3.5" />
+                    <XCircle className="h-4 w-4" />
                     Từ chối
                   </button>
                   <button
                     onClick={() => { setCurriculumModal(null); handleApprove(curriculumModal.courseId); }}
-                    className="inline-flex items-center gap-1.5 rounded-lg bg-green-600 hover:bg-green-700 py-2 px-3.5 text-xs font-semibold text-white shadow transition-all cursor-pointer"
+                    className="inline-flex items-center gap-1.5 rounded-lg bg-green-600 hover:bg-green-700 py-2.5 px-4 text-xs font-semibold text-white shadow-md transition-all cursor-pointer"
                   >
-                    <CheckCircle className="h-3.5 w-3.5" />
-                    Phê duyệt
+                    <CheckCircle className="h-4 w-4" />
+                    Phê duyệt khóa học
                   </button>
                 </div>
               </div>
