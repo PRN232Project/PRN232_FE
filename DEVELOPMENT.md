@@ -1,68 +1,68 @@
-# Hướng Dẫn Phát Triển & Đấu Nối API (DEVELOPMENT & API INTEGRATION GUIDELINES)
+# Development & API Integration Guidelines (`DEVELOPMENT.md`)
 
-Tài liệu này cung cấp sơ đồ cấu trúc, quy tắc thiết kế UI và quy trình từng bước dành cho Lập trình viên hoặc Trí Tuệ Nhân Tạo (AI) để tiến hành đấu nối API Backend vào giao diện Next.js Frontend này.
+This document provides architecture specifications, UI design rules, and a step-by-step procedure for Developers and AI assistants to connect Backend APIs into this Next.js Frontend application.
 
 ---
 
-## 1. Cấu Trúc Thư Mục Dịch Vụ (Service Directory Structure)
+## 1. Service Directory Structure
 
-Tất cả các cuộc gọi API được tách biệt hoàn toàn khỏi giao diện UI và quản lý tập trung trong thư mục `src/lib/service/` theo cấu trúc Domain-Driven:
+All API calls are strictly decoupled from UI components and managed centrally in `src/lib/service/` following Domain-Driven principles:
 
 ```
 src/lib/
-├── api-client/          # Axios instance cấu hình chung
-│   └── index.ts         # Quản lý baseURL, JWT Token & Cờ USE_MOCK
-└── service/             # Tách biệt theo các nghiệp vụ hệ thống
-    ├── admin/           # Phê duyệt khóa học, quản lý user, thanh toán
-    ├── auth/            # Đăng nhập, đăng ký, xác thực tài khoản
-    ├── course/          # Lấy danh sách khóa học, chi tiết đề cương
-    ├── instructor/      # Quản lý khóa học của tôi, ví tiền, doanh thu
-    ├── student/         # Đăng ký khóa học, học tập trực tuyến
-    ├── mock-data.ts     # Dữ liệu giả lập ban đầu để làm UI tĩnh
-    └── index.ts         # Khai báo export tập trung
+├── api-client/          # Shared Axios instance configuration
+│   └── index.ts         # BaseURL management, JWT Token interceptor & USE_MOCK flag
+└── service/             # Business domain services
+    ├── admin/           # Course review, user management, payout approvals
+    ├── auth/            # Login, registration, account verification
+    ├── course/          # Course listing, catalog, curriculum details
+    ├── instructor/      # Course management, wallet, revenue tracking
+    ├── student/         # Course registration, online learning, progress
+    ├── mock-data.ts     # Initial mock datasets for static UI prototyping
+    └── index.ts         # Centralized export declarations
 ```
 
 ---
 
-## 2. Quy Tắc Thiết Kế UI & Viết Code (UI Design Rules)
+## 2. UI Design & Code Quality Rules
 
-Khi viết hoặc cập nhật các component giao diện, AI và Lập trình viên cần tuân thủ nghiêm ngặt các quy tắc sau:
+When creating or updating UI components, Developers and AI assistants must strictly adhere to the following rules:
 
-1. **Sử dụng bảng màu chuẩn Tailwind CSS**:
-   - TUYỆT ĐỐI không sử dụng các màu tự chế không chuẩn (như `text-zinc-650`, `border-indigo-750`, `text-zinc-450`, `green-250`...) vì Turbopack và CSS Compiler sẽ không thể biên dịch và gây lỗi mờ chữ/mất màu trên trình duyệt.
-   - Luôn sử dụng thang màu chuẩn: `50`, `100`, `200`, `300`, `400`, `500`, `600`, `700`, `800`, `900`, `950` (Ví dụ: `text-zinc-500`, `text-zinc-800`, `border-zinc-200`).
+1. **Use Standard Tailwind CSS Color Palettes**:
+   - DO NOT use non-standard or arbitrary color classes (e.g., `text-zinc-650`, `border-indigo-750`, `green-250`) as CSS compilers and Turbopack cannot process them, causing unstyled or invisible text.
+   - Always use standard Tailwind color scales: `50`, `100`, `200`, `300`, `400`, `500`, `600`, `700`, `800`, `900`, `950` (Example: `text-zinc-500`, `text-zinc-800`, `border-zinc-200`).
 
-2. **Kế thừa hệ thống giao diện cao cấp (Premium Glassmorphism)**:
-   - Sử dụng lớp tiện ích `.glass-panel` cho các khối thẻ nổi có nền mờ sang trọng.
-   - Sử dụng `.glass-navbar` cho các thanh điều hướng dính ở đầu trang.
-   - Sử dụng `.gradient-text` kết hợp `bg-gradient-to-r` cho tiêu đề bắt mắt.
-   - Thêm hiệu ứng di chuột phóng to nhẹ (`group-hover:scale-[1.02] transition-transform duration-300`) cho tất cả các thẻ Card khóa học.
+2. **Leverage the Premium Glassmorphism UI System**:
+   - Use `.glass-panel` for elevated card containers with subtle frosted glass background.
+   - Use `.glass-navbar` for sticky top navigation bars.
+   - Use `.gradient-text` with `bg-gradient-to-r` for eye-catching hero headings.
+   - Add hover scaling (`group-hover:scale-[1.02] transition-transform duration-300`) on interactive course cards for enhanced UX.
 
 ---
 
-## 3. Quy Trình 4 Bước Đấu Nối API Backend
+## 3. 4-Step Backend API Integration Procedure
 
-Để chuyển đổi ứng dụng từ chế độ chạy dữ liệu giả lập (Mock Data) sang kết nối trực tiếp với API thật của ASP.NET Core Backend, hãy làm theo các bước sau:
+To switch the application from **Mock Data Mode** to live communication with the ASP.NET Core Backend API, follow these steps:
 
-### Bước 1: Cấu hình địa chỉ API và Tắt cờ Mock
-Mở tệp `src/lib/api-client/index.ts`:
-1. Chuyển giá trị của biến `USE_MOCK` từ `true` sang `false`.
-2. Cập nhật địa chỉ `baseURL` dẫn tới API backend của bạn:
+### Step 1: Configure Base URL and Disable Mock Mode
+Open `src/lib/api-client/index.ts` (or `config.ts`):
+1. Change `USE_MOCK` from `true` to `false`.
+2. Configure the `baseURL` pointing to your running backend:
 ```typescript
-export const USE_MOCK = false; // Chuyển sang false để kích hoạt API thật
+export const USE_MOCK = false; // Set to false to activate real backend API
 
 const apiClient = axios.create({
-  baseURL: process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api',
+  baseURL: process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5180/api',
   timeout: 10000,
 });
 ```
 
-### Bước 2: Đối chiếu kiểu dữ liệu (TypeScript Interfaces)
-Vào thư mục con tương ứng (ví dụ: `src/lib/service/course/type.ts`), kiểm tra cấu trúc của dữ liệu JSON mà API trả về có khớp với Interface TypeScript không.
-*Ví dụ:* Nếu backend trả về trường `instructorName` nhưng kiểu dữ liệu định nghĩa là `teacherName`, hãy sửa lại trong tệp `type.ts` hoặc thực hiện ánh xạ (mapping) lại dữ liệu trong phần gọi API.
+### Step 2: Verify TypeScript Interfaces
+Navigate to the corresponding domain folder (e.g., `src/lib/service/course/type.ts`) and verify that the JSON payload structure matches the backend DTOs.
+*Example:* If the backend returns `instructorName` instead of `teacherName`, update `type.ts` or map the response accordingly in the API service layer.
 
-### Bước 3: Kiểm tra cuộc gọi API thật
-Bên trong các file `api.ts` của các thư mục nghiệp vụ (ví dụ: `src/lib/service/course/api.ts`), nhánh `else` đã được viết sẵn bằng Axios:
+### Step 3: Verify REST Endpoints
+In the service `api.ts` files (e.g., `src/lib/service/course/api.ts`), ensure that the Axios request paths in the `else` branch match the C# Controller routes:
 ```typescript
 } else {
   const res = await apiClient.get<Course[]>('/courses', {
@@ -71,10 +71,9 @@ Bên trong các file `api.ts` của các thư mục nghiệp vụ (ví dụ: `sr
   return res.data;
 }
 ```
-Hãy đảm bảo rằng các Route API (`/courses`, `/courses/${courseId}`, `/auth/login`,...) trùng khớp với Route trên Controller của backend C#.
 
-### Bước 4: Tự động đính kèm JWT Token để xác thực tài khoản
-Hệ thống Axios interceptor trong `src/lib/api-client/index.ts` đã được cấu hình tự động lấy Token từ LocalStorage và đính kèm vào phần Header:
+### Step 4: Automatic JWT Bearer Authentication
+The Axios request interceptor in `src/lib/api-client/index.ts` automatically attaches the token from `localStorage`:
 ```typescript
 apiClient.interceptors.request.use((config) => {
   const token = localStorage.getItem('token');
@@ -84,14 +83,14 @@ apiClient.interceptors.request.use((config) => {
   return config;
 });
 ```
-*Lưu ý*: Giảng viên/Học viên khi Đăng nhập thành công cần lưu JWT token nhận được vào `localStorage.setItem('token', token)` để các API sau (ví dụ: Rút tiền, Phê duyệt, Đăng ký học) không bị lỗi phân quyền (401 Unauthorized / 403 Forbidden).
+*Note*: Upon successful authentication, save the received JWT token via `localStorage.setItem('token', token)` to prevent `401 Unauthorized` or `403 Forbidden` errors on protected endpoints.
 
 ---
 
-## 4. Tích Hợp Các Dịch Vụ AI AWS ( Speaking & Writing Test )
+## 4. AI Quiz Generation & Practice Evaluation Integration
 
-Đối với các chức năng luyện thi nói/viết IELTS tự động chấm bằng AWS AI, quy trình kết nối chuẩn là:
+For automated quiz generation and practice essay evaluation powered by **Google Gemini AI**:
 
-1. **Lấy Presigned URL**: Client gọi API backend để xin một đường dẫn tải lên bảo mật tạm thời từ AWS S3.
-2. **Upload tệp**: Client tải tệp ghi âm giọng nói ( Speaking ) hoặc tệp bài viết ( Writing ) trực tiếp lên S3 qua Presigned URL bằng phương thức `PUT` của axios (không cần đi qua backend để tránh tắc nghẽn băng thông).
-3. **Chấm điểm**: Gọi API Gateway kết nối tới các dịch vụ AWS Lambda của backend để kích hoạt hệ thống chấm điểm tự động bằng AI, nhận kết quả điểm số và lời khuyên hiển thị tức thì trên giao diện của Học viên.
+1. **Client-side Request**: Client triggers Next.js API routes (`/api/quiz/generate` or `/api/practice/grade`).
+2. **Gemini API Call**: Server-side route handlers consume `process.env.GEMINI_API_KEY` to query Google Gemini models (`gemini-1.5-flash` / `gemini-2.0-flash`).
+3. **Structured Response**: The AI response is parsed into clean JSON schemas and returned directly to the client interface for instant feedback.
