@@ -1,6 +1,6 @@
 <div align="center">
 
-# ⚛️ Online Learning Platform — Frontend (`prn232-fe`)
+# ⚛️ Online Learning Platform — Frontend (`PRN232-FE`)
 
 [![Next.js](https://img.shields.io/badge/Next.js-16.2.9-000000?style=for-the-badge&logo=nextdotjs)](https://nextjs.org/)
 [![React](https://img.shields.io/badge/React-19.0-61DAFB?style=for-the-badge&logo=react)](https://react.dev/)
